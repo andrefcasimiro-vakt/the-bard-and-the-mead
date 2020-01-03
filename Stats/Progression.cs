@@ -16,8 +16,10 @@ namespace RPG.Stats {
             public string classDisplayName = "";
             public CharacterClassEnum characterClass;
             public float initialHealthPoints;
+            public float initialStaminaPoints;
             public float initialAttackPoints;
             public float initialDefensePoints;
+            public float initialAgilityPoints;
             public float levelMultiplier;
 
         }
@@ -32,8 +34,10 @@ namespace RPG.Stats {
             public string raceDisplayName = "";
             public CharacterRaceEnum characterRace;
             public float bonusHealthPoints;
+            public float bonusStaminaPoints;
             public float bonusAttackPoints;
             public float bonusDefensePoints;
+            public float bonusAgilityPoints;
         }
 
         // =====================================> [ GENDER ] <================================
@@ -46,12 +50,15 @@ namespace RPG.Stats {
             public string genderDisplayName = "";
             public CharacterGenderEnum characterGender;
             public float bonusHealthPoints;
+            public float bonusStaminaPoints;
             public float bonusAttackPoints;
             public float bonusDefensePoints;
+            public float bonusAgilityPoints;
         }
 
         // =====================================> [ GETTERS BASED ON CURRENT CHARACTER STATS CALCULATIONS ] <================================
 
+        // HEALTH
         public float GetHealth(
             int startLevel,
             CharacterClassEnum characterClass,
@@ -89,6 +96,88 @@ namespace RPG.Stats {
 
             // Finally, return constructed health points
             return healthPoints;           
+        }
+
+        // STAMINA
+        public float GetStamina(
+            int startLevel,
+            CharacterClassEnum characterClass,
+            CharacterRaceEnum characterRace,
+            CharacterGenderEnum characterGender
+        )
+        {
+            float staminaPoints = 0f;
+
+            // Evaluate base health per class and current level
+            foreach (CharacterStat stat in characterStats)
+            {
+                if (stat.characterClass == characterClass)
+                {
+                    staminaPoints = stat.initialStaminaPoints + (startLevel * stat.levelMultiplier);
+                }
+            }
+
+            // Add bonus based on race
+            foreach (CharacterRace race in characterRaces)
+            {
+                if (race.characterRace == characterRace)
+                {
+                    staminaPoints += race.bonusStaminaPoints;
+                }
+            }
+
+            // Add bonus based on gender
+            foreach (CharacterGender gender in characterGenders)
+            {
+                if (gender.characterGender == characterGender)
+                {
+                    staminaPoints += gender.bonusStaminaPoints;
+                }
+            }
+
+            // Finally, return constructed health points
+            return staminaPoints;
+        }
+
+        // AGILITY
+        public float GetAgility(
+            int startLevel,
+            CharacterClassEnum characterClass,
+            CharacterRaceEnum characterRace,
+            CharacterGenderEnum characterGender
+        )
+        {
+            float agilityPoints = 0f;
+
+            // Evaluate base health per class and current level
+            foreach (CharacterStat stat in characterStats)
+            {
+                if (stat.characterClass == characterClass)
+                {
+                    agilityPoints = stat.initialAgilityPoints + (startLevel * stat.levelMultiplier);
+                }
+            }
+
+            // Add bonus based on race
+            foreach (CharacterRace race in characterRaces)
+            {
+                if (race.characterRace == characterRace)
+                {
+                    agilityPoints += race.bonusAgilityPoints;
+                }
+            }
+
+            // Add bonus based on gender
+            foreach (CharacterGender gender in characterGenders)
+            {
+                if (gender.characterGender == characterGender)
+                {
+                    agilityPoints += gender.bonusAgilityPoints;
+                }
+            }
+
+            // Finally, return constructed health points
+            return agilityPoints;
         }
 
     }

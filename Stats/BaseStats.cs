@@ -26,5 +26,15 @@ namespace RPG.Stats {
             return progression.GetHealth(startLevel, characterClass, characterRace, characterGender);
         }
 
+        public float GetStamina()
+        {
+            return progression.GetStamina(startLevel, characterClass, characterRace, characterGender);
+        }
+
+        public float GetAgility()
+        {
+            return progression.GetAgility(startLevel, characterClass, characterRace, characterGender);
+        }
+
     }
 }

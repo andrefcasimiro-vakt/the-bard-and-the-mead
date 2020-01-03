@@ -10,13 +10,14 @@ namespace RPG.Weapon {
 
         public string slotName = "";
         public Weapon currentWeapon = null;
+        // In world stored reference
         GameObject weaponGameObject = null;
-
-        Transform boneTarget => transform;
 
         // Path to the unarmed weapon scriptable object in Database/Resources/Weapons folder
         const string UNARMED_WEAPON_PATH = "Weapons/Unarmed";
         Weapon unarmedWeapon = null;
+
+
         Hitbox hitbox = null;
         AudioSource audioSource => GetComponent<AudioSource>();
 
@@ -36,6 +37,8 @@ namespace RPG.Weapon {
         // Helpers
         void EquipUnarmed()
         {
+            UnequipWeapon();
+
             currentWeapon = unarmedWeapon;
             SpawnWeapon();
         }
@@ -43,11 +46,28 @@ namespace RPG.Weapon {
         // Setters
         public void UnequipWeapon()
         {
+            // Remove listeners
+            if (hitbox != null)
+            {
+                hitbox.OnHit.RemoveListener(HitTarget);
+            }
+
+            // Destroy old weapon gameobject instance
+            if (weaponGameObject != null)
+            {
+                Destroy(weaponGameObject);
+            }
+
+            // Cleanup references
+            hitbox = null;
+            weaponGameObject = null;
             currentWeapon = null;
         }
 
         public void EquipWeapon(Weapon weaponToEquip)
         {
+            UnequipWeapon();
+
             currentWeapon = weaponToEquip;
             SpawnWeapon();
         }
