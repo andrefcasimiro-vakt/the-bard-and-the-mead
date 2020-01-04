@@ -68,7 +68,7 @@ namespace RPG.Core
 
         public void DecreaseStamina(float decreaseAmount)
         {
-            currentStaminaPoints = Mathf.Max(currentStaminaPoints - decreaseAmount * Time.deltaTime, -1f);
+            currentStaminaPoints = Mathf.Max((currentStaminaPoints - decreaseAmount * Time.deltaTime), -1f);
         }
 
         public bool HasStamina()

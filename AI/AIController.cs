@@ -3,23 +3,28 @@ using UnityEngine.AI;
 using RPG.AI;
 using RPG.Combat;
 using RPG.Core;
+using System.Collections;
 
-namespace RPG.Control {
+namespace RPG.AI {
     
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(AIMovement))]
     [RequireComponent(typeof(Battler))]
     [RequireComponent(typeof(Health))]
+    [RequireComponent(typeof(AISight))]
+    [RequireComponent(typeof(BehaviourCombat))]
+    [RequireComponent(typeof(BehaviourRest))]
     public class AIController : MonoBehaviour
     {
         [Header("Movement Settings")]
         [Range(0, 1)]
         [SerializeField] float patrolSpeedFraction = 0.2f;
 
-
         [Header("Chasing Settings")]
         [SerializeField] float chaseDistance = 5f;
         [SerializeField] float suspicionTime = 3f;
+        [Range(0, 1)]
+        [SerializeField] float chaseSpeedFraction = 0.4f;
 
         [Header("Waypoint Settings")]
         [SerializeField] PatrolPath patrolPath = null;
@@ -37,12 +42,17 @@ namespace RPG.Control {
         Battler battler => GetComponent<Battler>();
         Health health => GetComponent<Health>();
         AIMovement movement => GetComponent<AIMovement>();
+        AISight sight => GetComponent<AISight>();
+
         GameObject player = null;
 
         [SerializeField]
         StateMachineEnum state = StateMachineEnum.PATROL;
-
         StateMachineEnum previousState;
+
+        // Actions
+        BehaviourCombat combat => GetComponent<BehaviourCombat>();
+        BehaviourRest rest => GetComponent<BehaviourRest>();
 
         void Start()
         {
@@ -71,6 +81,15 @@ namespace RPG.Control {
                 case StateMachineEnum.PATROL:
                     PatrolBehaviour();
                     break;
+                case StateMachineEnum.CHASE:
+                    ChaseBehaviour();
+                    break;
+                case StateMachineEnum.REST:
+                    RestBehaviour();
+                    break;
+                case StateMachineEnum.ARRIVED_AT_PLAYER:
+                    ArrivedAtPlayerBehaviour();
+                    break;
                 case StateMachineEnum.CHAT:
                     ChatBehaviour();
                     break;
@@ -78,6 +97,13 @@ namespace RPG.Control {
                 default:
                     return;
             }
+        }
+
+        // Editor Event Actions
+        public void Chase()
+        {
+            previousState = state;
+            state = StateMachineEnum.CHASE;
         }
 
         // Setters
@@ -91,14 +117,13 @@ namespace RPG.Control {
             state = previousState;
         }
 
-        // Behaviour Logic
-        void ChatBehaviour()
+        // Getters
+        public StateMachineEnum GetCurrentState()
         {
-            transform.LookAt(player.transform);
-            movement.Cancel();
-
+            return state;
         }
 
+        // FSM Behaviour Logic
         void PatrolBehaviour()
         {
             Vector3 nextPosition = originalPosition;
@@ -113,10 +138,45 @@ namespace RPG.Control {
                 nextPosition = GetCurrentWaypoint();
             }
 
-            if (timeSinceArrivedAtWaypoint > waypointDwellTime) { 
+            if (timeSinceArrivedAtWaypoint > waypointDwellTime)
+            {
                 // Return to the original position
                 movement.StartMoveAction(nextPosition, patrolSpeedFraction);
             }
+        }
+
+        void ChatBehaviour()
+        {
+            transform.LookAt(player.transform);
+            movement.Cancel();
+        }
+
+        void ChaseBehaviour()
+        {
+            movement.Cancel();
+
+            movement.ChaseTowards(sight.GetLastKnownPositionOfPlayer(), chaseSpeedFraction);
+        }
+
+        void RestBehaviour()
+        {
+            movement.Cancel();
+
+            rest.Dispatch();
+        }
+
+        void ArrivedAtPlayerBehaviour()
+        {
+            // If is NPC like a courier, invoke an event maybe
+
+            // If is agressive towards the player, enter combat
+            CombatBehaviour();
+        }
+
+        void CombatBehaviour()
+        {
+            movement.Cancel();
+            combat.Dispatch();
         }
 
         // Private

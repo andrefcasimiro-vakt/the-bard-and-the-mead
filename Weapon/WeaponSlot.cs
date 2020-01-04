@@ -17,9 +17,14 @@ namespace RPG.Weapon {
         const string UNARMED_WEAPON_PATH = "Weapons/Unarmed";
         Weapon unarmedWeapon = null;
 
-
+        GameObject weaponOwner = null;
         Hitbox hitbox = null;
         AudioSource audioSource => GetComponent<AudioSource>();
+
+        // ANIMATOR STRINGS
+        const string AttackTrigger = "Attack";
+        const string DefendTrigger = "Defend";
+        const string DodgeTrigger = "Dodge";
 
         void Awake()
         {
@@ -44,6 +49,11 @@ namespace RPG.Weapon {
         }
 
         // Setters
+        public void SetOwner(GameObject owner)
+        {
+            weaponOwner = owner;
+        }
+
         public void UnequipWeapon()
         {
             // Remove listeners
@@ -86,6 +96,20 @@ namespace RPG.Weapon {
         // PUBLIC METHODS
         public void Attack(AudioClip gruntAudioClip)
         {
+            // Owner of weapon has enough stamina to perform next attack?
+            Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
+
+            bool canAttack = ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost);
+            if (!canAttack)
+            {
+                return;
+            }
+
+            ownerStamina.DecreaseStamina(currentWeapon.staminaCost * 100f);
+
+            // Owner Animation
+            weaponOwner.GetComponent<Animator>().SetTrigger(AttackTrigger);
+
             StartCoroutine(HandleAttack());
             StartCoroutine(HandleSound());
             StartCoroutine(HandleGrunt(gruntAudioClip));

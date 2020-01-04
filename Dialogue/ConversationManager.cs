@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.Core;
 using RPG.Control;
+using RPG.AI;
 
 namespace RPG.Dialogue {
     public class ConversationManager : MonoBehaviour {
@@ -46,9 +47,6 @@ namespace RPG.Dialogue {
                 return;
             }
 
-            // Disable player components
-            player.GetComponent<ComponentManager>().Disable();
-
             // Make player and dialogue owner face each other
             aIController.SetState(StateMachineEnum.CHAT);
             player.transform.LookAt(dialogueOwner.transform);
@@ -62,9 +60,6 @@ namespace RPG.Dialogue {
 
         public void OnDialogueFinish()
         {
-            // Restore player components
-            player.GetComponent<ComponentManager>().Enable();
-
             // Restore AI previous state that was set before the conversation took place
             aIController.SetPreviousState();
 

@@ -17,6 +17,7 @@ namespace RPG.Weapon {
         [Header("Stats")]
         public float weaponDamage = 1f;
         public float weaponRange = 1f;
+        public float staminaCost = 3f; // Stamina cost per attack
 
         [Header("Animations")]
         [SerializeField] AnimatorOverrideController animatorOverrideController;
@@ -34,7 +35,6 @@ namespace RPG.Weapon {
         public float gruntTimeToTrigger = 0.1f;
 
         public AudioClip hitSFX;
-
 
         [Header("Particles")]
         public GameObject particlePrefab;

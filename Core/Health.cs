@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using RPG.Stats;
 
 namespace RPG.Core {
@@ -7,7 +8,8 @@ namespace RPG.Core {
     [RequireComponent(typeof(BaseStats))]
     public class Health: MonoBehaviour {
 
-        [SerializeField] float healthPoints;
+        [SerializeField] float maxHealthPoints;
+        float currentHealthPoints;
 
         [SerializeField] float bonusHealthPoints;
 
@@ -17,11 +19,26 @@ namespace RPG.Core {
         BaseStats baseStats => GetComponent<BaseStats>();
         Animator animator => GetComponent<Animator>();
 
+        [Header("UI")]
+        [SerializeField] Slider healthbar;
+
         void Start()
         {
-            healthPoints = baseStats.GetHealth() + bonusHealthPoints;
+            maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
+            currentHealthPoints = maxHealthPoints;
         }
-        
+
+        private void Update()
+        {
+            UpdateHealthSlider();
+        }
+
+        void UpdateHealthSlider()
+        {
+            healthbar.maxValue = GetMaxHealthPoints();
+            healthbar.minValue = 0f;
+            healthbar.value = GetCurrentHealth();
+        }
 
         public void TakeDamage(float damageAmount)
         {
@@ -30,9 +47,9 @@ namespace RPG.Core {
                 return;
             }
 
-            healthPoints = Mathf.Max(healthPoints - damageAmount, 0);
+            currentHealthPoints = Mathf.Max(currentHealthPoints - damageAmount, 0);
 
-            if (healthPoints <= 0f)
+            if (currentHealthPoints <= 0f)
             {
                 Die();
             }
@@ -45,7 +62,26 @@ namespace RPG.Core {
 
         public bool IsDead()
         {
-            return healthPoints <= 0f;
+            return currentHealthPoints <= 0f;
+        }
+
+        public float GetMaxHealthPoints()
+        {
+            return maxHealthPoints;
+        }
+
+        public float GetCurrentHealth()
+        {
+            return currentHealthPoints;
+        }
+
+        public bool IsLowHealth()
+        {
+            // maxhealth is 100
+            // low health is 30
+            // Formula is 30 x maxhealth / 100
+
+            return ((30 * maxHealthPoints) / 100) <= currentHealthPoints;
         }
     }
 

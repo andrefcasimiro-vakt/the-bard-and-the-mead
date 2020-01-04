@@ -1,9 +1,11 @@
-namespace RPG.Control {
+namespace RPG.AI {
     public enum StateMachineEnum {
         IDLE,
         CHAT,
         PATROL,
         CHASE,
-        COMBAT
+        REST,
+        COMBAT,
+        ARRIVED_AT_PLAYER
     }
 }

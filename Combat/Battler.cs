@@ -12,36 +12,37 @@ namespace RPG.Combat {
         [Header("Battler Audio")]
         public AudioClip gruntAudioClip;
 
-        Animator animator => GetComponent<Animator>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
-        // Animator Parameter Keys
-        const string AttackTrigger = "Attack";
-        const string DefendTrigger = "Defend";
-        const string DodgeTrigger = "Dodge";
+        const int COMBAT_LAYER_INDEX = 1;
 
         public void Attack()
         {
-            animator.SetTrigger(AttackTrigger);
-
             weaponManager.Attack(gruntAudioClip);
         }
 
         public void Defend()
         {
             print("Defend");
-            animator.SetTrigger(DefendTrigger);
         }
 
         public void Dodge()
         {
             print("Dodge");
-            animator.SetTrigger(DodgeTrigger);
         }
 
-
-
-
-
+        // Getters
+        public bool IsAttacking()
+        {
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Attack"); ;
+        }
+        public bool IsDefending()
+        {
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Defend"); ;
+        }
+        public bool IsDodging()
+        {
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Dodge"); ;
+        }
     }
 }

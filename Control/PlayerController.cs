@@ -14,6 +14,8 @@ namespace RPG.Control {
         [SerializeField] string attackInput;
         [SerializeField] string defendInput;
         [SerializeField] string dodgeInput;
+        [SerializeField] float inputCooldown = 0.5f;
+        float timer = Mathf.Infinity;
 
         [Header("Sprint Input")]
         [SerializeField] float sprintStaminaCost = 5f;
@@ -24,32 +26,44 @@ namespace RPG.Control {
 
         void Update()
         {
+            timer += Time.deltaTime;
+
             CombatInput();
         }
 
         private void LateUpdate()
         {
             SprintInput();
-
         }
 
         void CombatInput()
         {
+            if (timer < inputCooldown)
+            {
+                return;
+            }
+
             if (Input.GetButtonDown(attackInput))
             {
                 battler.Attack();
+                timer = 0f;
+
                 return;
             }
 
             if (Input.GetButtonDown(defendInput))
             {
                 battler.Defend();
+                timer = 0f;
+
                 return;
             }
 
             if (Input.GetButtonDown(dodgeInput))
             {
                 battler.Dodge();
+                timer = 0f;
+
                 return;
             }
         }
@@ -82,6 +96,11 @@ namespace RPG.Control {
 
                 stamina.DecreaseStamina(sprintStaminaCost);
             }
+        }
+
+        public float GetInputCooldown()
+        {
+            return inputCooldown;
         }
     }
 }

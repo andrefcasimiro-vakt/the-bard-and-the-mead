@@ -7,6 +7,14 @@ namespace RPG.Weapon {
         [Header("Weapon Slot")]
         public WeaponSlot[] weaponSlots;
 
+        private void Start()
+        {
+            foreach(WeaponSlot weaponSlot in weaponSlots)
+            {
+                weaponSlot.SetOwner(this.gameObject);
+            }
+        }
+
         public void Attack(
             AudioClip gruntAudioClip
         )
