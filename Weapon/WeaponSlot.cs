@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using RPG.Core;
+using RPG.Combat;
 
 namespace RPG.Weapon {
 
@@ -20,6 +21,8 @@ namespace RPG.Weapon {
         GameObject weaponOwner = null;
         Hitbox hitbox = null;
         AudioSource audioSource => GetComponent<AudioSource>();
+
+        Battler battler => GetComponent<Battler>();
 
         // ANIMATOR STRINGS
         const string AttackTrigger = "Attack";
@@ -99,7 +102,11 @@ namespace RPG.Weapon {
             // Owner of weapon has enough stamina to perform next attack?
             Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
 
-            bool canAttack = ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost);
+            bool canAttack =
+                ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost)
+                || !battler.IsTakingDamage()
+            ;
+
             if (!canAttack)
             {
                 return;

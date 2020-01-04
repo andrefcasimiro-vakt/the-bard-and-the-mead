@@ -34,15 +34,19 @@ namespace RPG.Combat {
         // Getters
         public bool IsAttacking()
         {
-            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Attack"); ;
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Attack");
         }
         public bool IsDefending()
         {
-            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Defend"); ;
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Defend");
         }
         public bool IsDodging()
         {
-            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Dodge"); ;
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("Dodge");
+        }
+        public bool IsTakingDamage()
+        {
+            return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("TakeDamage");
         }
     }
 }

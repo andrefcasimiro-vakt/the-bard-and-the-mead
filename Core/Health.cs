@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Stats;
+using RPG.AI;
 
 namespace RPG.Core {
 
@@ -18,9 +19,13 @@ namespace RPG.Core {
 
         BaseStats baseStats => GetComponent<BaseStats>();
         Animator animator => GetComponent<Animator>();
+        
 
         [Header("UI")]
         [SerializeField] Slider healthbar;
+
+        // AI
+        AIController aiController => GetComponent<AIController>();
 
         void Start()
         {
@@ -47,7 +52,14 @@ namespace RPG.Core {
                 return;
             }
 
+
             currentHealthPoints = Mathf.Max(currentHealthPoints - damageAmount, 0);
+
+            // Is AI?
+            if (aiController != null)
+            {
+                aiController.SetState(StateMachineEnum.TAKE_DAMAGE);
+            }
 
             if (currentHealthPoints <= 0f)
             {
@@ -78,10 +90,10 @@ namespace RPG.Core {
         public bool IsLowHealth()
         {
             // maxhealth is 100
-            // low health is 30
-            // Formula is 30 x maxhealth / 100
+            // low health is 20%
+            // Formula is 20 x maxhealth / 100
 
-            return ((30 * maxHealthPoints) / 100) <= currentHealthPoints;
+            return currentHealthPoints <= (20 * maxHealthPoints) / 100;
         }
     }
 

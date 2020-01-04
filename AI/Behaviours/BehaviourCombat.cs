@@ -2,27 +2,25 @@
 using System.Collections;
 using RPG.Core;
 using RPG.Combat;
+using RPG.Weapon;
 
 namespace RPG.AI
 {
 
     public class BehaviourCombat : MonoBehaviour
     {
-        [SerializeField]
-        float distanceToStartChasingPlayer = 3f;
-
         GameObject player;
         Animator animator => GetComponent<Animator>();
         AIController controller => GetComponent<AIController>();
         Battler battler => GetComponent<Battler>();
         Health health => GetComponent<Health>();
         Stamina stamina => GetComponent<Stamina>();
+        WeaponManager weaponManager => GetComponent<WeaponManager>();
 
         bool inProgress = false;
 
         // Constants
         const string ANIMATOR_IS_STRAFING = "IsStrafing";
-        const int COMBAT_LAYER_INDEX = 1;
 
         private void Start()
         {
@@ -40,6 +38,22 @@ namespace RPG.AI
             }
         }
 
+        private void LateUpdate()
+        {
+            if (inProgress)
+            {
+                FacePlayer();
+            }
+        }
+
+        void FacePlayer()
+        {
+            Vector3 targetPosition = new Vector3(player.transform.position.x,
+                                                   this.transform.position.y,
+                                                   player.transform.position.z);
+            this.transform.LookAt(targetPosition);
+        }
+
         void DecideNextMove()
         {
             // Audit Player First
@@ -49,7 +63,7 @@ namespace RPG.AI
                 return;
             }
 
-            if (PlayerIsEscaping())
+            if (PlayerIsFarAway())
             {
                 ChasePlayer();
                 return;
@@ -101,6 +115,9 @@ namespace RPG.AI
 
                 // RESTORE MAGIC (if is mage and can use magic and has healing capability)
             }
+
+            StartCoroutine(Attack());
+            return;
 
             // Defend
             if (probability > 0.5f)
@@ -202,9 +219,9 @@ namespace RPG.AI
             return player.GetComponent<Health>().IsDead();
         }
 
-        bool PlayerIsEscaping()
+        public bool PlayerIsFarAway()
         {
-            return Vector3.Distance(player.transform.position, transform.position) > distanceToStartChasingPlayer;
+            return Vector3.Distance(player.transform.position, transform.position) > weaponManager.GetStoppingDistance();
         }
 
         bool PlayerIsAttacking()

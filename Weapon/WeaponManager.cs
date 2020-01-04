@@ -25,7 +25,18 @@ namespace RPG.Weapon {
             }
         }
 
+        // Combine all weaponRanges from equipped weapons to determine how far from the target should we be
+        public float GetStoppingDistance()
+        {
+            float distance = 0f;
 
+            foreach (WeaponSlot weaponSlot in weaponSlots)
+            {
+                distance += weaponSlot.currentWeapon.weaponRange;
+            }
+
+
+            return distance / weaponSlots.Length;
+        }
     }
-
 }

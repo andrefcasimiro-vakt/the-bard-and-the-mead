@@ -13,6 +13,7 @@ namespace RPG.AI {
     [RequireComponent(typeof(Health))]
     [RequireComponent(typeof(AISight))]
     [RequireComponent(typeof(BehaviourCombat))]
+    [RequireComponent(typeof(BehaviourTakeDamage))]
     [RequireComponent(typeof(BehaviourRest))]
     public class AIController : MonoBehaviour
     {
@@ -52,6 +53,7 @@ namespace RPG.AI {
 
         // Actions
         BehaviourCombat combat => GetComponent<BehaviourCombat>();
+        BehaviourTakeDamage takeDamage => GetComponent<BehaviourTakeDamage>();
         BehaviourRest rest => GetComponent<BehaviourRest>();
 
         void Start()
@@ -84,11 +86,14 @@ namespace RPG.AI {
                 case StateMachineEnum.CHASE:
                     ChaseBehaviour();
                     break;
-                case StateMachineEnum.REST:
-                    RestBehaviour();
-                    break;
                 case StateMachineEnum.ARRIVED_AT_PLAYER:
                     ArrivedAtPlayerBehaviour();
+                    break;
+                case StateMachineEnum.TAKE_DAMAGE:
+                    TakeDamageBehaviour();
+                    break;
+                case StateMachineEnum.REST:
+                    RestBehaviour();
                     break;
                 case StateMachineEnum.CHAT:
                     ChatBehaviour();
@@ -124,6 +129,9 @@ namespace RPG.AI {
         }
 
         // FSM Behaviour Logic
+
+
+        // =====================> MOVEMENT RELATED
         void PatrolBehaviour()
         {
             Vector3 nextPosition = originalPosition;
@@ -145,12 +153,6 @@ namespace RPG.AI {
             }
         }
 
-        void ChatBehaviour()
-        {
-            transform.LookAt(player.transform);
-            movement.Cancel();
-        }
-
         void ChaseBehaviour()
         {
             movement.Cancel();
@@ -158,13 +160,7 @@ namespace RPG.AI {
             movement.ChaseTowards(sight.GetLastKnownPositionOfPlayer(), chaseSpeedFraction);
         }
 
-        void RestBehaviour()
-        {
-            movement.Cancel();
-
-            rest.Dispatch();
-        }
-
+        // ==================> PROXIMITY BEHAVIOURS
         void ArrivedAtPlayerBehaviour()
         {
             // If is NPC like a courier, invoke an event maybe
@@ -173,10 +169,36 @@ namespace RPG.AI {
             CombatBehaviour();
         }
 
+        // ==================> COMBAT BEHAVIOURS
+
         void CombatBehaviour()
         {
             movement.Cancel();
+            
             combat.Dispatch();
+        }
+
+        void TakeDamageBehaviour()
+        {
+            movement.Cancel();
+
+            takeDamage.Dispatch();
+        }
+
+        // ===============> GENERIC BEHAVIOURS
+
+        void RestBehaviour()
+        {
+            movement.Cancel();
+
+            rest.Dispatch();
+        }
+
+        void ChatBehaviour()
+        {
+            transform.LookAt(player.transform);
+            
+            movement.Cancel();
         }
 
         // Private

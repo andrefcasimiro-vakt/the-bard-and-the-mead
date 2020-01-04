@@ -38,5 +38,6 @@ namespace RPG.Weapon {
 
         [Header("Particles")]
         public GameObject particlePrefab;
+
     }
 }

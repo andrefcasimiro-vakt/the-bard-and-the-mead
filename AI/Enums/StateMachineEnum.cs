@@ -6,6 +6,7 @@ namespace RPG.AI {
         CHASE,
         REST,
         COMBAT,
+        TAKE_DAMAGE,
         ARRIVED_AT_PLAYER
     }
 }
