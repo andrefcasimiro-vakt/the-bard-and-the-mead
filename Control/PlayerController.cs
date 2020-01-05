@@ -13,7 +13,6 @@ namespace RPG.Control {
         [Header("Combat Input")]
         [SerializeField] string attackInput;
         [SerializeField] string defendInput;
-        [SerializeField] string dodgeInput;
         [SerializeField] float inputCooldown = 0.5f;
         float timer = Mathf.Infinity;
 
@@ -54,14 +53,6 @@ namespace RPG.Control {
             if (Input.GetButtonDown(defendInput))
             {
                 battler.Defend();
-                timer = 0f;
-
-                return;
-            }
-
-            if (Input.GetButtonDown(dodgeInput))
-            {
-                battler.Dodge();
                 timer = 0f;
 
                 return;

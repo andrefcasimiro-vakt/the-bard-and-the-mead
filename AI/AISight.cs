@@ -39,11 +39,12 @@ namespace RPG.AI {
                 return;
             }
 
-            // Dont Run If Exhausted / Arrived At Player / Combating
+            // Ignore Player If Exhausted / Arrived At Player / Combating / Fleeing
             if (
                 controller.GetCurrentState() == StateMachineEnum.REST
                 || controller.GetCurrentState() == StateMachineEnum.ARRIVED_AT_PLAYER
                 || controller.GetCurrentState() == StateMachineEnum.COMBAT
+                || controller.GetCurrentState() == StateMachineEnum.FLEE
              )
             {
                 return;

@@ -4,6 +4,7 @@ namespace RPG.AI {
         CHAT,
         PATROL,
         CHASE,
+        FLEE,
         REST,
         COMBAT,
         TAKE_DAMAGE,

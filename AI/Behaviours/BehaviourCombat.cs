@@ -14,7 +14,6 @@ namespace RPG.AI
         AIController controller => GetComponent<AIController>();
         Battler battler => GetComponent<Battler>();
         Health health => GetComponent<Health>();
-        Stamina stamina => GetComponent<Stamina>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
         bool inProgress = false;
@@ -69,6 +68,22 @@ namespace RPG.AI
                 return;
             }
 
+            // Check Our Health
+            if (health.IsLowHealth())
+            {
+                // RUN AWAY
+                if (true)
+                {
+                    RunAway();
+                    return;
+                }
+
+                // TAKE POTION (if has a potion in inventory)
+
+                // RESTORE MAGIC (if is mage and can use magic and has healing capability)
+            }
+
+            // Respond to player interactions
             if (PlayerIsAttacking())
             {
                 RespondToAttack();
@@ -102,32 +117,21 @@ namespace RPG.AI
         {
             float probability = Random.Range(0f, 1f);
 
-            if (health.IsLowHealth())
-            {
-                // RUN AWAY
-                if (true)
-                {
-                    StartCoroutine(RunAway());
-                    return;
-                }
-
-                // TAKE POTION (if has a potion in inventory)
-
-                // RESTORE MAGIC (if is mage and can use magic and has healing capability)
-            }
-
-            StartCoroutine(Attack());
-            return;
-
             // Defend
-            if (probability > 0.5f)
+            if (probability > 0.6f)
             {
                 StartCoroutine(Defend());
                 return;
             }
 
-            // Or Dodge
-            StartCoroutine(Dodge());
+            if (probability <= 0.6f && probability > 2f)
+            {
+                // Or Dodge
+                StartCoroutine(Dodge());
+                return;
+            }
+
+            StartCoroutine(Attack());
             return;
         }
 
@@ -202,14 +206,11 @@ namespace RPG.AI
             inProgress = false;
         }
 
-        IEnumerator RunAway()
+        void RunAway()
         {
-            print("Low health. Run away!");
-
-            yield return new WaitForEndOfFrame();
 
             // TODO: Change to Flee
-            controller.SetState(StateMachineEnum.PATROL);
+            controller.SetState(StateMachineEnum.FLEE);
             inProgress = false;
         }
 

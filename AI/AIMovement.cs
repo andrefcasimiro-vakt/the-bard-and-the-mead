@@ -16,6 +16,8 @@ namespace RPG.AI
 
         [SerializeField] float stoppingDistanceToPlayer = 1f;
 
+        [SerializeField] float maxChasingDistance = 20f;
+
         [Header("Character Stamina")]
         [SerializeField] float staminaChasingCost = 3f;
 
@@ -66,13 +68,24 @@ namespace RPG.AI
         // Which will define if we should continue this action or return to a previous one
         public void ChaseTowards(Vector3 destination, float speedFraction)
         {
-            if (Vector3.Distance(player.transform.position, transform.position) < stoppingDistanceToPlayer)
+            float currentDistance = Vector3.Distance(player.transform.position, transform.position);
+
+            // Has reached player
+            if (currentDistance < stoppingDistanceToPlayer)
             {
                 aiController.SetState(StateMachineEnum.ARRIVED_AT_PLAYER);
 
                 return;
             }
 
+            // Player escaped
+            if (currentDistance > maxChasingDistance)
+            {
+                aiController.SetState(StateMachineEnum.PATROL);
+                return;
+            }
+
+            // Has Stamina To Continue chase?
             if (stamina.HasStaminaAgainstCostAction(staminaChasingCost))
             {
                 MoveTo(destination, speedFraction);

@@ -45,15 +45,7 @@ namespace RPG.AI
 
         void HandleNextState()
         {
-            // If player is out of range, chase him
-            if (combatBehaviour.PlayerIsFarAway())
-            {
-                controller.SetState(StateMachineEnum.CHASE);
-                return;
-            }
-
-            // Otherwise, enter combat
-            controller.SetState(StateMachineEnum.COMBAT);
+            controller.SetState(StateMachineEnum.CHASE);
         }
 
     }

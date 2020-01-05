@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using RPG.Weapon;
+using RPG.Core;
 
 namespace RPG.Combat {
 
@@ -12,9 +13,18 @@ namespace RPG.Combat {
         [Header("Battler Audio")]
         public AudioClip gruntAudioClip;
 
+        Animator animator => GetComponent<Animator>();
+        Health health => GetComponent<Health>();
+        Stamina stamina => GetComponent<Stamina>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
+        [Header("Dodge")]
+        [SerializeField] float dodgeStaminaCost = 10f;
+
+        // Constants
         const int COMBAT_LAYER_INDEX = 1;
+        const string ANIM_TRIGGER_DEFENSE_PARAMETER = "Defend";
+        const string ANIM_TRIGGER_DODGE_PARAMETER = "Dodge";
 
         public void Attack()
         {
@@ -23,12 +33,40 @@ namespace RPG.Combat {
 
         public void Defend()
         {
-            print("Defend");
+            StartCoroutine(ExecuteDefense());
         }
 
         public void Dodge()
         {
-            print("Dodge");
+            if (!stamina.HasStaminaAgainstCostAction(dodgeStaminaCost))
+            {
+                return;
+            }
+
+            stamina.DecreaseStamina(dodgeStaminaCost * 100f);
+            StartCoroutine(ExecuteDodge());
+        }
+
+        IEnumerator ExecuteDefense()
+        {
+            animator.SetTrigger(ANIM_TRIGGER_DEFENSE_PARAMETER);
+
+            yield return new WaitUntil(() => IsDefending());
+            // Deactivate healthbox
+            health.enabled = false;
+            yield return new WaitUntil(() => !IsDefending());
+            health.enabled = true;
+        }
+
+        IEnumerator ExecuteDodge()
+        {
+            animator.SetTrigger(ANIM_TRIGGER_DODGE_PARAMETER);
+
+            yield return new WaitUntil(() => IsDodging());
+            // Deactivate healthbox
+            health.enabled = false;
+            yield return new WaitUntil(() => !IsDodging());
+            health.enabled = true;
         }
 
         // Getters

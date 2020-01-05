@@ -14,6 +14,7 @@ namespace RPG.AI {
     [RequireComponent(typeof(AISight))]
     [RequireComponent(typeof(BehaviourCombat))]
     [RequireComponent(typeof(BehaviourTakeDamage))]
+    [RequireComponent(typeof(BehaviourRunAway))]
     [RequireComponent(typeof(BehaviourRest))]
     public class AIController : MonoBehaviour
     {
@@ -26,6 +27,10 @@ namespace RPG.AI {
         [SerializeField] float suspicionTime = 3f;
         [Range(0, 1)]
         [SerializeField] float chaseSpeedFraction = 0.4f;
+
+        [Header("Fleeing Settings")]
+        [Range(0, 1)]
+        public float fleeSpeedFraction = 0.3f;
 
         [Header("Waypoint Settings")]
         [SerializeField] PatrolPath patrolPath = null;
@@ -54,6 +59,7 @@ namespace RPG.AI {
         // Actions
         BehaviourCombat combat => GetComponent<BehaviourCombat>();
         BehaviourTakeDamage takeDamage => GetComponent<BehaviourTakeDamage>();
+        BehaviourRunAway runAway => GetComponent<BehaviourRunAway>();
         BehaviourRest rest => GetComponent<BehaviourRest>();
 
         void Start()
@@ -85,6 +91,9 @@ namespace RPG.AI {
                     break;
                 case StateMachineEnum.CHASE:
                     ChaseBehaviour();
+                    break;
+                case StateMachineEnum.FLEE:
+                    FleeBehaviour();
                     break;
                 case StateMachineEnum.ARRIVED_AT_PLAYER:
                     ArrivedAtPlayerBehaviour();
@@ -158,6 +167,13 @@ namespace RPG.AI {
             movement.Cancel();
 
             movement.ChaseTowards(sight.GetLastKnownPositionOfPlayer(), chaseSpeedFraction);
+        }
+
+        void FleeBehaviour()
+        {
+            movement.Cancel();
+
+            runAway.Dispatch();
         }
 
         // ==================> PROXIMITY BEHAVIOURS
