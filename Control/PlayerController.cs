@@ -1,6 +1,7 @@
 using UnityEngine;
 using RPG.Core;
 using RPG.Combat;
+using RPG.Saving;
 using Invector.CharacterController;
 
 namespace RPG.Control {
@@ -8,7 +9,7 @@ namespace RPG.Control {
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(Battler))]
     [RequireComponent(typeof(vThirdPersonInput))]
-    public class PlayerController : MonoBehaviour
+    public class PlayerController : MonoBehaviour, ISaveable
     {
         [Header("Combat Input")]
         [SerializeField] string attackInput;
@@ -92,6 +93,20 @@ namespace RPG.Control {
         public float GetInputCooldown()
         {
             return inputCooldown;
+        }
+
+
+        public object CaptureState()
+        {
+            return new SerializableVector3(transform.position);
+        }
+
+        public void RestoreState(object state)
+        {
+            SerializableVector3 position = (SerializableVector3)state;
+
+            // Reapply saved position
+            transform.position = position.ToVector();
         }
     }
 }

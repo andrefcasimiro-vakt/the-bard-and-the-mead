@@ -3,6 +3,7 @@ using UnityEngine.AI;
 using RPG.AI;
 using RPG.Combat;
 using RPG.Core;
+using RPG.Saving;
 using System.Collections;
 
 namespace RPG.AI {
@@ -16,7 +17,7 @@ namespace RPG.AI {
     [RequireComponent(typeof(BehaviourTakeDamage))]
     [RequireComponent(typeof(BehaviourRunAway))]
     [RequireComponent(typeof(BehaviourRest))]
-    public class AIController : MonoBehaviour
+    public class AIController : MonoBehaviour, ISaveable
     {
         [Header("Movement Settings")]
         [Range(0, 1)]
@@ -249,6 +250,37 @@ namespace RPG.AI {
         {
             Gizmos.color = Color.cyan;
             Gizmos.DrawWireSphere(transform.position, chaseDistance);
+        }
+
+        public object CaptureState()
+        {
+            return new SaveableAgent(transform.position, GetCurrentState());
+        }
+
+        public void RestoreState(object state)
+        {
+            SaveableAgent loadedState = (SaveableAgent)state;
+
+            // Reapply saved position
+            GetComponent<NavMeshAgent>().enabled = false;
+            transform.position = loadedState.position.ToVector();
+            GetComponent<NavMeshAgent>().enabled = true;
+
+            SetState(loadedState.currentState);
+        }
+    }
+
+    // For the saving system
+    [System.Serializable]
+    public class SaveableAgent
+    {
+        public SerializableVector3 position;
+        public StateMachineEnum currentState;
+
+        public SaveableAgent(Vector3 position, StateMachineEnum currentState)
+        {
+            this.position = new SerializableVector3(position);
+            this.currentState = currentState;
         }
     }
 }

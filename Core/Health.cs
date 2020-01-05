@@ -2,12 +2,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.Stats;
 using RPG.AI;
+using RPG.Saving;
 
 namespace RPG.Core {
 
     [RequireComponent(typeof(Animator))]
     [RequireComponent(typeof(BaseStats))]
-    public class Health: MonoBehaviour {
+    public class Health: MonoBehaviour, ISaveable {
 
         [SerializeField] float maxHealthPoints;
         float currentHealthPoints;
@@ -94,6 +95,16 @@ namespace RPG.Core {
             // Formula is 20 x maxhealth / 100
 
             return currentHealthPoints <= (20 * maxHealthPoints) / 100;
+        }
+
+        public object CaptureState()
+        {
+            return currentHealthPoints;
+        }
+
+        public void RestoreState(object state)
+        {
+            currentHealthPoints = (float)state;
         }
     }
 

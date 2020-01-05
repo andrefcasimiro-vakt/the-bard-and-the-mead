@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Stats;
+using RPG.Saving;
 
 namespace RPG.Core
 {
     [RequireComponent(typeof(BaseStats))]
-    public class Stamina : MonoBehaviour
+    public class Stamina : MonoBehaviour, ISaveable 
     {
         [SerializeField]
         float staminaPoints = 0f;
@@ -79,6 +80,17 @@ namespace RPG.Core
         public bool HasStaminaAgainstCostAction(float staminaCost)
         {
             return currentStaminaPoints > staminaCost;
+        }
+
+        // SAVING SYSTEM
+        public object CaptureState()
+        {
+            return currentStaminaPoints;
+        }
+
+        public void RestoreState(object state)
+        {
+            this.currentStaminaPoints = (float)state;
         }
     }
 }
