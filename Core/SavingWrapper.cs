@@ -13,18 +13,18 @@ namespace RPG.Core
 
         const string defaultSaveFile = "save";
         SavingSystem savingSystem;
-        //Fader fader;
+        Fader fader;
 
-        void Start()
+        IEnumerator Start()
         {
-            savingSystem = GetComponent<SavingSystem>();
-           //fader = FindObjectOfType<Fader>();
+           savingSystem = GetComponent<SavingSystem>();
+           fader = FindObjectOfType<Fader>();
 
             // Start any scene with black screen
-            //fader.FadeOutImmediate();
+            fader.FadeOutImmediate();
 
-            //yield return savingSystem.LoadLastScene(defaultSaveFile);
-            //yield return fader.FadeIn(fadeInTime);
+            yield return savingSystem.LoadLastScene(defaultSaveFile);
+            yield return fader.FadeIn(fadeInTime);
         }
 
         void Update()

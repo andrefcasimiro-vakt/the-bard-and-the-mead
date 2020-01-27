@@ -11,7 +11,7 @@ namespace RPG.Core {
     public class Health: MonoBehaviour, ISaveable {
 
         [SerializeField] float maxHealthPoints;
-        float currentHealthPoints;
+        [SerializeField] float currentHealthPoints;
 
         [SerializeField] float bonusHealthPoints;
 
@@ -31,7 +31,10 @@ namespace RPG.Core {
         void Start()
         {
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
-            currentHealthPoints = maxHealthPoints;
+
+            if (currentHealthPoints == 0f) {
+                currentHealthPoints = maxHealthPoints;
+            }
         }
 
         private void Update()
@@ -44,6 +47,11 @@ namespace RPG.Core {
             healthbar.maxValue = GetMaxHealthPoints();
             healthbar.minValue = 0f;
             healthbar.value = GetCurrentHealth();
+        }
+
+        public void Restore(float restoreAmount)
+        {
+            currentHealthPoints = Mathf.Min(currentHealthPoints + restoreAmount, maxHealthPoints);
         }
 
         public void TakeDamage(float damageAmount)

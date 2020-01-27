@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using RPG.Core;
 using RPG.Combat;
+using RPG.Inventory;
 
 namespace RPG.Weapon {
 
@@ -10,13 +11,13 @@ namespace RPG.Weapon {
     public class WeaponSlot: MonoBehaviour {
 
         public string slotName = "";
-        public Weapon currentWeapon = null;
+        public ScriptableWeapon currentWeapon = null;
         // In world stored reference
         GameObject weaponGameObject = null;
 
         // Path to the unarmed weapon scriptable object in Database/Resources/Weapons folder
         const string UNARMED_WEAPON_PATH = "Weapons/Unarmed";
-        Weapon unarmedWeapon = null;
+        ScriptableWeapon unarmedWeapon = null;
 
         GameObject weaponOwner = null;
         Hitbox hitbox = null;
@@ -31,7 +32,7 @@ namespace RPG.Weapon {
 
         void Awake()
         {
-            unarmedWeapon = Resources.Load<Weapon>(UNARMED_WEAPON_PATH);
+            unarmedWeapon = Resources.Load<ScriptableWeapon>(UNARMED_WEAPON_PATH);
         }
 
         void Update()
@@ -77,7 +78,7 @@ namespace RPG.Weapon {
             currentWeapon = null;
         }
 
-        public void EquipWeapon(Weapon weaponToEquip)
+        public void EquipWeapon(ScriptableWeapon weaponToEquip)
         {
             UnequipWeapon();
 
@@ -86,7 +87,7 @@ namespace RPG.Weapon {
         }
 
         // Getters
-        public Weapon GetEquippedWeapon()
+        public ScriptableWeapon GetEquippedWeapon()
         {
             return currentWeapon;
         }
@@ -101,6 +102,8 @@ namespace RPG.Weapon {
         {
             // Owner of weapon has enough stamina to perform next attack?
             Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
+
+            print(currentWeapon);
 
             bool canAttack =
                 ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost)

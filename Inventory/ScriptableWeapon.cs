@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-namespace RPG.Weapon {
+namespace RPG.Inventory {
 
     [System.Serializable]
     public class Soundclip
@@ -12,7 +12,7 @@ namespace RPG.Weapon {
     }
 
     [CreateAssetMenu(fileName = "Weapons", menuName = "Weapons/New Weapon", order = 0)]
-    public class Weapon : ScriptableObject
+    public class ScriptableWeapon : ScriptableItem
     {
         [Header("Stats")]
         public float weaponDamage = 1f;

@@ -33,7 +33,10 @@ namespace RPG.Core
         void Start()
         {
             staminaPoints = baseStats.GetStamina() + staminaPoints;
-            currentStaminaPoints = staminaPoints;
+
+            if (currentStaminaPoints == 0f) { 
+                currentStaminaPoints = staminaPoints;
+            }
         }
 
         private void Update()

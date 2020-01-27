@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.AI;
-using RPG.Core;
 
 namespace RPG.Core
 {
@@ -71,10 +70,8 @@ namespace RPG.Core
         {
             GameObject player = GameObject.FindWithTag("Player");
 
-            player.GetComponent<NavMeshAgent>().enabled = false;
             player.transform.position = otherPortal.spawnPoint.position;
             player.transform.rotation = otherPortal.spawnPoint.rotation;
-            player.GetComponent<NavMeshAgent>().enabled = true;
         }
 
         Portal GetOtherPortal()
