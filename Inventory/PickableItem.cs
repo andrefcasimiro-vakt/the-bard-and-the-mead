@@ -8,7 +8,7 @@ namespace RPG.Inventory
     {
 
         [SerializeField]
-        ScriptableItem itemToPick;
+        ScriptableItem[] itemsToPick;
 
         public bool isCollected = false;
 
@@ -16,7 +16,10 @@ namespace RPG.Inventory
         {
             if (other.gameObject.tag == "Player")
             {
-                other.GetComponent<CharacterInventory>().Add(itemToPick);
+                foreach (ScriptableItem item in itemsToPick)
+                {
+                    other.GetComponent<CharacterInventory>().Add(item);
+                }
 
                 isCollected = true;
 

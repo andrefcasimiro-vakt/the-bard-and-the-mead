@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections.Generic;
-using System.Linq;
 using RPG.Character;
+using RPG.Stats;
 
 namespace RPG.Inventory
 {
@@ -13,33 +12,28 @@ namespace RPG.Inventory
         public float agilityMultiplier = 0f;
 
         [Header("Graphic")]
-        public string graphicGameObjectName;
+        public string maleGraphicGameObjectName;
+        public string femaleGraphicGameObjectName;
 
         public BodyPart bodyPart;
 
         public void Equip(GameObject target)
         {
             GameObject equipmentGraphic = null;
+            BaseStats baseStats = target.GetComponent<BaseStats>();
+            bool isMale = baseStats.IsMale();
+            string graphicName = isMale ? maleGraphicGameObjectName : femaleGraphicGameObjectName;
 
             foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
             {
-                if (t.gameObject.name == graphicGameObjectName)
+                if (t.gameObject.name == graphicName)
                 {
                     equipmentGraphic = t.gameObject;
                     break;
                 }
             }
 
-
-            if (equipmentGraphic.activeSelf)
-            {
-                Debug.Log("Item already equipped");
-                Unequip(target);
-                return;
-            }
-
             equipmentGraphic.SetActive(true);
-
 
             if (equipmentGraphic != null)
             {
@@ -48,59 +42,19 @@ namespace RPG.Inventory
 
 
             CharacterGraphic charGraphic = target.GetComponent<CharacterGraphic>();
-
-            switch (bodyPart)
-            {
-                case BodyPart.HAIR:
-                    charGraphic.HideHair();
-                    break;
-                case BodyPart.HEAD:
-                    charGraphic.HideHead();
-                    charGraphic.HideEyebrows();
-                    charGraphic.HideBeard();
-                    break;
-                case BodyPart.TORSO:
-                    charGraphic.HideTorso();
-                    break;
-                case BodyPart.UPPER_RIGHT_ARM:
-                    charGraphic.HideUpperRightArm();
-                    break;
-                case BodyPart.LOWER_RIGHT_ARM:
-                    charGraphic.HideLowerRightArm();
-                    break;
-                case BodyPart.RIGHT_HAND:
-                    charGraphic.HideRightHand();
-                    break;
-                case BodyPart.UPPER_LEFT_ARM:
-                    charGraphic.HideUpperLeftArm();
-                    break;
-                case BodyPart.LOWER_LEFT_ARM:
-                    charGraphic.HideLowerLeftArm();
-                    break;
-                case BodyPart.LEFT_HAND:
-                    charGraphic.HideLeftHand();
-                    break;
-                case BodyPart.HIPS:
-                    charGraphic.HideHips();
-                    break;
-                case BodyPart.RIGHT_LEG:
-                    charGraphic.HideRightLeg();
-                    break;
-                case BodyPart.LEFT_LEG:
-                    charGraphic.HideLeftLeg();
-                    break;
-                default:
-                    break;
-            }
+            ToggleBodyPart(charGraphic, bodyPart, false);
         }
 
         public void Unequip(GameObject target)
         {
             GameObject equipmentGraphic = null;
+            BaseStats baseStats = target.GetComponent<BaseStats>();
+            bool isMale = baseStats.IsMale();
+            string graphicName = isMale ? maleGraphicGameObjectName : femaleGraphicGameObjectName;
 
             foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
             {
-                if (t.gameObject.name == graphicGameObjectName)
+                if (t.gameObject.name == graphicName)
                 {
                     equipmentGraphic = t.gameObject;
                     break;
@@ -110,69 +64,54 @@ namespace RPG.Inventory
             equipmentGraphic.SetActive(false);
 
             CharacterGraphic charGraphic = target.GetComponent<CharacterGraphic>();
+            ToggleBodyPart(charGraphic, bodyPart, true);
+        }
 
+            
+        void ToggleBodyPart(CharacterGraphic charGraphic, BodyPart bodyPart, bool value)
+        {
             switch (bodyPart)
             {
-                case BodyPart.HAIR:
-                    charGraphic.ShowHair();
+                case BodyPart.Hair:
+                    charGraphic.TogglePart(BodyPart.Hair, value);
                     break;
-                case BodyPart.HEAD:
-                    charGraphic.ShowHead();
-                    charGraphic.ShowEyebrows();
-                    charGraphic.ShowBeard();
+                case BodyPart.Head:
+                    charGraphic.TogglePart(BodyPart.Head, value);
                     break;
-                case BodyPart.TORSO:
-                    charGraphic.ShowTorso();
+                case BodyPart.Torso:
+                    charGraphic.TogglePart(BodyPart.Torso, value);
                     break;
-                case BodyPart.UPPER_RIGHT_ARM:
-                    charGraphic.ShowUpperRightArm();
+                case BodyPart.ArmUpperRight:
+                    charGraphic.TogglePart(BodyPart.ArmUpperRight, value);
                     break;
-                case BodyPart.LOWER_RIGHT_ARM:
-                    charGraphic.ShowLowerRightArm();
+                case BodyPart.ArmLowerRight:
+                    charGraphic.TogglePart(BodyPart.ArmLowerRight, value);
                     break;
-                case BodyPart.RIGHT_HAND:
-                    charGraphic.ShowRightHand();
+                case BodyPart.RightHand:
+                    charGraphic.TogglePart(BodyPart.RightHand, value);
                     break;
-                case BodyPart.UPPER_LEFT_ARM:
-                    charGraphic.ShowUpperLeftArm();
+                case BodyPart.ArmUpperLeft:
+                    charGraphic.TogglePart(BodyPart.ArmUpperLeft, value);
                     break;
-                case BodyPart.LOWER_LEFT_ARM:
-                    charGraphic.ShowLowerLeftArm();
+                case BodyPart.ArmLowerLeft:
+                    charGraphic.TogglePart(BodyPart.ArmLowerLeft, value);
                     break;
-                case BodyPart.LEFT_HAND:
-                    charGraphic.ShowLeftHand();
+                case BodyPart.LeftHand:
+                    charGraphic.TogglePart(BodyPart.LeftHand, value);
                     break;
-                case BodyPart.HIPS:
-                    charGraphic.ShowHips();
+                case BodyPart.Hips:
+                    charGraphic.TogglePart(BodyPart.Hips, value);
                     break;
-                case BodyPart.RIGHT_LEG:
-                    charGraphic.ShowRightLeg();
+                case BodyPart.RightLeg:
+                    charGraphic.TogglePart(BodyPart.RightLeg, value);
                     break;
-                case BodyPart.LEFT_LEG:
-                    charGraphic.ShowLeftLeg();
+                case BodyPart.LeftLeg:
+                    charGraphic.TogglePart(BodyPart.LeftLeg, value);
                     break;
                 default:
                     break;
             }
         }
 
-
-    }
-
-
-    public enum BodyPart
-    {
-        HEAD,
-        HAIR,
-        TORSO,
-        UPPER_RIGHT_ARM,
-        LOWER_RIGHT_ARM,
-        RIGHT_HAND,
-        UPPER_LEFT_ARM,
-        LOWER_LEFT_ARM,
-        LEFT_HAND,
-        HIPS,
-        RIGHT_LEG,
-        LEFT_LEG
     }
 }

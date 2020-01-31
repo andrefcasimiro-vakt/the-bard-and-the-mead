@@ -36,5 +36,15 @@ namespace RPG.Stats {
             return progression.GetAgility(startLevel, characterClass, characterRace, characterGender);
         }
 
+        public bool IsMale()
+        {
+            return characterGender == CharacterGenderEnum.MALE;
+        }
+
+        public string GetRace()
+        {
+            return characterRace.ToString();
+        }
+
     }
 }

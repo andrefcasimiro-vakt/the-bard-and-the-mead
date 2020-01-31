@@ -1,117 +1,132 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using RPG.Stats;
 
 namespace RPG.Character {
 
+    public enum BodyPart
+    {
+        Head,
+        Torso,
+        ArmUpperRight,
+        ArmLowerRight,
+        RightHand,
+        ArmUpperLeft,
+        ArmLowerLeft,
+        LeftHand,
+        Hips,
+        LeftLeg,
+        RightLeg,
+        Hair,
+        Eyebrows,
+        Beard
+    }
+
+    [System.Serializable]
+    public class CharacterBody
+    {
+        public BodyPart id;
+        public GameObject gameObject;
+        public string prefix;
+
+        public CharacterBody(BodyPart id, string prefix)
+        {
+            this.id = id;
+            this.prefix = prefix;
+        }
+
+        public void SetGameObject(GameObject g)
+        {
+            this.gameObject = g;
+        }
+    }
+
+
+    /*
+        This class must store the character gender, race and base graphics 
+    */
     public class CharacterGraphic : MonoBehaviour
     {
+        public GameObject placeholder;
 
-        public GameObject head;
-        public GameObject torso;
-        public GameObject upperRightArm;
-        public GameObject lowerRightArm;
-        public GameObject rightHand;
-        public GameObject upperLeftArm;
-        public GameObject lowerLeftArm;
-        public GameObject leftHand;
-        public GameObject hips;
-        public GameObject rightLeg;
-        public GameObject leftLeg;
+        public string CharacterBase_Prefix = "Chr_";
 
-        // Accessories
-        public GameObject hair;
-        public GameObject eyebrows;
-        public GameObject beard;
+        public List<CharacterBody> characterBody = new List<CharacterBody>();
 
-        public void ShowHead()
-        {
-            head.SetActive(true);
-        }
-        public void HideHead()
-        {
-            head.SetActive(false);
-        }
+        [Header("Body")]
+        public string Head_Prefix = "Head_00";
+        public string Torso_Prefix = "Torso_00";
 
-        public void ShowTorso()
-        {
-            torso.SetActive(true);
-        }
-        public void HideTorso()
-        {
-            torso.SetActive(false);
-        }
+        public string ArmUpperRight_Prefix = "ArmUpperRight_00";
+        public string ArmLowerRight_Prefix = "ArmLowerRight_00";
+        public string HandRight_Prefix = "HandRight_00";
 
-        public void ShowUpperRightArm()
-        {
-            upperRightArm.SetActive(true);
-        }
-        public void HideUpperRightArm()
-        {
-            upperRightArm.SetActive(false);
-        }
+        public string ArmUpperLeft_Prefix = "ArmUpperLeft_00";
+        public string ArmLowerLeft_Prefix = "ArmLowerLeft_00";
+        public string HandLeft_Prefix = "HandLeft_00";
 
-        public void ShowLowerRightArm()
-        {
-            lowerRightArm.SetActive(true);
-        }
-        public void HideLowerRightArm()
-        {
-            lowerRightArm.SetActive(false);
-        }
+        public string Hips_Prefix = "Hips_00";
 
-        public void ShowRightHand()
+        public string LegRight_Prefix = "LegRight_00";
+        public string LegLeft_Prefix = "LegLeft_00";
+
+        [Header("Optional Accessories")]
+        public string Hair_Prefix = "";
+        public string Eyebrows_Prefix = "";
+        public string Beard_Prefix = "";
+
+        [Header("Skin Tone")]
+        public string Etnicity_Prefix = "";
+
+        void Start()
         {
-            rightHand.SetActive(true);
-        }
-        public void HideRightHand()
-        {
-            rightHand.SetActive(false);
+            placeholder.SetActive(false);
+
+            string genderPrefix = GetComponent<BaseStats>().IsMale() ? "_Male" : "_Female";
+
+            characterBody.Add(new CharacterBody(BodyPart.Head, AddGenderToBodyPrefix(Head_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.Torso, AddGenderToBodyPrefix(Torso_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.ArmUpperRight, AddGenderToBodyPrefix(ArmUpperRight_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.ArmLowerRight, AddGenderToBodyPrefix(ArmLowerRight_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.RightHand, AddGenderToBodyPrefix(HandRight_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.ArmUpperLeft, AddGenderToBodyPrefix(ArmUpperLeft_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.ArmLowerLeft, AddGenderToBodyPrefix(ArmLowerLeft_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.LeftHand, AddGenderToBodyPrefix(HandLeft_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.Hips, AddGenderToBodyPrefix(Hips_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.LeftLeg, AddGenderToBodyPrefix(LegRight_Prefix, genderPrefix) ));
+            characterBody.Add(new CharacterBody(BodyPart.RightLeg, AddGenderToBodyPrefix(LegLeft_Prefix, genderPrefix) ));
+            // Accessories
+            characterBody.Add(new CharacterBody(BodyPart.Hair, Hair_Prefix));
+            characterBody.Add(new CharacterBody(BodyPart.Eyebrows, Eyebrows_Prefix));
+            characterBody.Add(new CharacterBody(BodyPart.Beard, Beard_Prefix));
+
+
+            BuildCharacter();
         }
 
-        public void ShowUpperLeftArm() { upperLeftArm.SetActive(true); }
-        public void HideUpperLeftArm() { upperLeftArm.SetActive(false); }
-
-        public void ShowLowerLeftArm() { lowerLeftArm.SetActive(true); }
-        public void HideLowerLeftArm() { lowerLeftArm.SetActive(false); }
-
-        public void ShowLeftHand() { leftHand.SetActive(true); }
-        public void HideLeftHand() { leftHand.SetActive(false); }
-
-        public void ShowHips() { hips.SetActive(true); }
-        public void HideHips() { hips.SetActive(false); }
-
-        public void ShowRightLeg() { rightLeg.SetActive(true); }
-        public void HideRightLeg() { rightLeg.SetActive(false); }
-
-        public void ShowLeftLeg() { leftLeg.SetActive(true); }
-        public void HideLeftLeg() { leftLeg.SetActive(false); }
-
-        public void ShowHair() { hair?.SetActive(true); }
-        public void HideHair() { hair?.SetActive(false); }
-
-        public void ShowEyebrows() { eyebrows?.SetActive(true); }
-        public void HideEyebrows() { eyebrows?.SetActive(false); }
-
-        public void ShowBeard() { beard?.SetActive(true); }
-        public void HideBeard() { beard?.SetActive(false); }
-
-        private void Start()
+        string AddGenderToBodyPrefix(string bodyPrefix, string genderPrefix)
         {
-            ShowHead();
-            ShowTorso();
-            ShowUpperRightArm();
-            ShowLowerRightArm();
-            ShowRightHand();
-            ShowUpperLeftArm();
-            ShowLowerLeftArm();
-            ShowLeftHand();
-            ShowHips();
-            ShowRightLeg();
-            ShowLeftLeg();
-            ShowHair();
-            ShowEyebrows();
-            ShowBeard();
+            return CharacterBase_Prefix + bodyPrefix.Insert(bodyPrefix.Length - 3, genderPrefix) + Etnicity_Prefix;
+        }
+
+        public void BuildCharacter()
+        {
+            foreach (Transform t in GetComponentsInChildren<Transform>(true))
+            {
+                foreach (CharacterBody c in characterBody)
+                {
+                    if (c.prefix == t.gameObject.name)
+                    {
+                        c.SetGameObject(t.gameObject);
+                        c.gameObject.SetActive(true);
+                    }
+                }
+            }
+        }
+
+        public void TogglePart(BodyPart bodyPart, bool value)
+        {
+            characterBody.Find(c => c.id == bodyPart).gameObject.SetActive(value);
         }
 
     }

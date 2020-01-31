@@ -3,9 +3,24 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Control;
+using RPG.Character;
 
 namespace RPG.Inventory
 {
+
+    [System.Serializable]
+    public class Slot
+    {
+        public Image image;
+        public ScriptableEquipment equipment;
+
+        public Slot(Image image, ScriptableEquipment equipment)
+        {
+            this.image = image;
+            this.equipment = equipment;
+        }
+    }
+
     public class InventoryManager : MonoBehaviour
     {
 
@@ -28,7 +43,21 @@ namespace RPG.Inventory
 
         // The player or an npc inventory system
         CharacterInventory currentCharacterInventory;
+        GameObject inventoryOwner;
         List<ScriptableItem> inventory;
+
+        // Equipment Slots
+        public Slot head;
+        public Slot torso;
+        public Slot leftUpperArm;
+        public Slot leftLowerArm;
+        public Slot leftHand;
+        public Slot rightUpperArm;
+        public Slot rightLowerArm;
+        public Slot rightHand;
+        public Slot hips;
+        public Slot leftLeg;
+        public Slot rightLeg;
 
         private void Start()
         {
@@ -78,6 +107,7 @@ namespace RPG.Inventory
         public void Open(CharacterInventory characterInventory)
         {
             this.currentCharacterInventory = characterInventory;
+            this.inventoryOwner = characterInventory.gameObject;
             this.inventory = characterInventory.inventory;
 
             Draw();
@@ -131,12 +161,14 @@ namespace RPG.Inventory
                 // Parent item button to panel
                 itemButton.transform.SetParent(slotPanel.transform);
 
+                Button itemBtn = itemButton.GetComponent<Button>();
+                itemBtn.onClick.RemoveAllListeners();
+
                 if (item.itemType == ItemEnum.ITEM)
                 {
-                    itemButton.GetComponent<Button>().onClick.RemoveAllListeners();
-                    itemButton.GetComponent<Button>().onClick.AddListener(() =>
+                    itemBtn.onClick.AddListener(() =>
                     {
-                        item.Consume(currentCharacterInventory.gameObject);
+                        item.Consume(inventoryOwner);
 
                         print("clciked");
 
@@ -147,53 +179,78 @@ namespace RPG.Inventory
 
                 if (item.itemType == ItemEnum.EQUIPMENT)
                 {
-                    itemButton.GetComponent<Button>().onClick.RemoveAllListeners();
-                    itemButton.GetComponent<Button>().onClick.AddListener(() =>
+                    ScriptableEquipment equipment = (ScriptableEquipment)item;
+
+                    bool itemIsEquipped = GetSlot(equipment.bodyPart).equipment == equipment;
+                    FindNestedGameObjectByTag(itemButton, UI_INVENTORY_EQUIPPED).GetComponent<Image>().enabled = itemIsEquipped;
+
+                    itemBtn.onClick.AddListener(() =>
                     {
-                        ScriptableEquipment equipment = (ScriptableEquipment)item;
-                        equipment.Equip(currentCharacterInventory.gameObject);
+                       
+                        Slot slot = GetSlot(equipment.bodyPart);
+                        FindNestedGameObjectByTag(itemButton, UI_INVENTORY_EQUIPPED).GetComponent<Image>().enabled = false;
+
+                        // Item is already equipped?
+                        if (slot.equipment == equipment)
+                        {
+                            equipment.Unequip(inventoryOwner);
+                            slot.image.sprite = null;
+                            slot.equipment = null;
+                            return;
+                        }
+
+                        // Unequip current slot before attempting to equip new item
+                        if (slot.equipment != null)
+                        {
+                            slot.equipment.Unequip(inventoryOwner);
+                            slot.equipment = null;
+                        }
+
+                        // Slot is free. Equip item
+                        equipment.Equip(inventoryOwner);
+
+                        // Update Equipment Panel Sloot Sprite
+                        slot.image.sprite = equipment.itemSprite;
+                        slot.equipment = equipment;
+
+                        FindNestedGameObjectByTag(itemButton, UI_INVENTORY_EQUIPPED).GetComponent<Image>().enabled = true;
+
+                        // Update UI to update UI_INVENTORY_EQUIPPED borders for active items
+                        Draw();
                     });
                 }
-
-                /*
-                // @ Equippable Item Logic
-                if (item.graphic != null)
-                {
-                    // @ If item is already equipped, show Equipped banner
-                    ScriptableItem equippedItem = equipmentManager.GetEquippedItem(item.slot);
-
-                    GameObject equippedBanner = FindNestedGameObjectByTag(itemButton, Constants.UI_INVENTORY_EQUIPPED);
-                    equippedBanner.SetActive(false);
-
-                    if (equippedItem == item)
-                    {
-                        // Search for the Equipped Banner and activate it
-                        equippedBanner?.SetActive(true);
-
-                    }
-
-                    itemButton.GetComponent<Button>().onClick.AddListener(() => {
-
-                        // @Is Item equipped already?
-                        if (equippedItem == item)
-                        {
-                            equipmentManager.Unequip(item.slot);
-                            equippedBanner?.SetActive(false);
-                        }
-                        else
-                        {
-                            equipmentManager.Equip(item.slot, item);
-                            equippedBanner?.SetActive(true);
-                        }
-
-                        // Redraw
-                        Draw();
-
-                    });
-                }*/
-
             }
+        }
 
+        Slot GetSlot (BodyPart bodyPart)
+        {
+            switch (bodyPart)
+            {
+                case BodyPart.Head:
+                    return head;
+                case BodyPart.Torso:
+                    return torso;
+                case BodyPart.ArmUpperRight:
+                    return rightUpperArm;
+                case BodyPart.ArmLowerRight:
+                    return rightLowerArm;
+                case BodyPart.RightHand:
+                    return rightHand;
+                case BodyPart.ArmUpperLeft:
+                    return leftUpperArm; 
+                case BodyPart.ArmLowerLeft:
+                    return leftLowerArm;
+                case BodyPart.LeftHand:
+                    return leftHand;
+                case BodyPart.Hips:
+                    return hips;
+                case BodyPart.RightLeg:
+                    return rightLeg;
+                case BodyPart.LeftLeg:
+                    return leftLeg;
+                default:
+                    return null;
+            }
         }
 
         private GameObject FindNestedGameObjectByTag(GameObject parent, string _tag)
