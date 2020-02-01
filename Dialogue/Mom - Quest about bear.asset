@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76374472a106b164e973dc3e5148b74c, type: 3}
+  m_Name: Mom - Quest about bear
+  m_EditorClassIdentifier: 
+  name: MOM - Quest about bear
+  description: Triggers the quest about the bear.
+  entries:
+  - text: 
+    id: 0
+    nextDialogueEntryId: 0
+    choices: []
+    events: []
