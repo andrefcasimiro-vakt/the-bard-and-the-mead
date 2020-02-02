@@ -21,14 +21,14 @@ namespace RPG.Dialogue {
         [SerializeField]
         GameObject dialogueOwner;
 
-        public GameObject camera;
+        public GameObject cutsceneCamera;
 
         bool dialogueInProgress = false;
         bool playerIsNear = false;
 
         void Start()
         {
-            camera.SetActive(false);
+            cutsceneCamera.SetActive(false);
 
             if (string.IsNullOrEmpty(dialogueOwnerName))
             {
@@ -43,7 +43,7 @@ namespace RPG.Dialogue {
             actionUI.GetComponent<Text>().text = "";
 
             // Set a new dialogue for the dialogue ui
-            dialogueUi.SetConversation(new ConversationTree((DialogueContainer) dialogue), dialogueOwnerName, camera);
+            dialogueUi.SetConversation(new ConversationTree((DialogueContainer) dialogue), dialogueOwnerName, cutsceneCamera);
 
             dialogueInProgress = true;
 

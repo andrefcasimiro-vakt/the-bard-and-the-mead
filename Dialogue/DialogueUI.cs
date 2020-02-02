@@ -1,80 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-using RPG.Dialogue;
-
-using UnityEngine.UIElements;
-using UnityEditor.UIElements;
-using RPG.Dialogue.Core;
-using System;
-using UnityEditor.Experimental.GraphView;
-using System.Linq;
-using System.Collections.Generic;
 using UnityEngine.UI;
 
 namespace RPG.Dialogue
 {
-    public class Choice
-    {
-        public string text;
-        public string targetGUID;
-
-        public Choice(string text, string targetGUID)
-        {
-            this.text = text;
-            this.targetGUID = targetGUID;
-        }
-    }
-
-    [System.Serializable]
-    public class ConversationTree
-    {
-
-        public DialogueContainer dialogueContainer;
-        public string currentBaseNodeGuid;
-
-        public ConversationTree(DialogueContainer d)
-        {
-            this.dialogueContainer = d;
-
-            if (currentBaseNodeGuid == null)
-            {
-                // First baseNodeGuid is the default "NEXT" whic has always a target node guid associated with it.
-                // Advance the dialogue in the first entry using targetNodeGuid.
-                AdvanceDialogue(dialogueContainer.NodeLinks[0].TargetNodeGuid);
-            }
-        }
-
-        public void AdvanceDialogue(string nextBaseNodeGuid)
-        {
-            currentBaseNodeGuid = nextBaseNodeGuid;
-        }
-
-        public string GetCurrentText()
-        {
-            string text = dialogueContainer.DialogueNodeData.Where(x => x.Guid == currentBaseNodeGuid).FirstOrDefault().DialogueText;
-
-            return text;
-        }
-
-        public List<Choice> GetChoices()
-        {
-            List<Choice> choices = new List<Choice>();
-
-            dialogueContainer.NodeLinks.ForEach(x =>
-            {
-                if (x.BaseNodeGuid == currentBaseNodeGuid)
-                {
-                    choices.Add(new Choice(x.PortName, x.TargetNodeGuid));
-                }
-            });
-
-            return choices;
-        }
-    }
-
-
     public class DialogueUI : MonoBehaviour
     {
 
@@ -85,6 +14,8 @@ namespace RPG.Dialogue
         public GameObject dialogueText;
         public GameObject choicePanel;
         public GameObject choiceButtonPrefab;
+
+        public GameObject arrow;
 
         public GameObject cutsceneCamera;
 
@@ -100,6 +31,7 @@ namespace RPG.Dialogue
 
         void Toggle(bool v)
         {
+
             foreach (Transform c in this.transform)
             {
                 c.gameObject.SetActive(v);
@@ -151,12 +83,18 @@ namespace RPG.Dialogue
                 repaint = false;
             }
 
-            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.KeypadEnter))
+            if (
+                Input.GetKeyDown(KeyCode.Space) ||
+                Input.GetKeyDown(KeyCode.E) ||
+                Input.GetKeyDown(KeyCode.KeypadEnter) ||
+                Input.GetButtonDown("Fire1")
+            )
             {
                 List<Choice> choices = conversationTree.GetChoices();
 
                 if (choices.Count <= 1)
                 {
+
                     string id = choices.Count == 1 ? choices[0].targetGUID : null;
 
                     Advance(id);
@@ -166,11 +104,18 @@ namespace RPG.Dialogue
 
         private void ManageDialogue()
         {
-            Debug.Log("dialogueOwner" + dialogueOwnerName);
-            dialogueOwner.GetComponent<Text>().text = dialogueOwnerName;
-            dialogueText.GetComponent<Text>().text = conversationTree.GetCurrentText();
+            string currentDialogue = conversationTree.GetCurrentText();
+            if (string.IsNullOrEmpty(currentDialogue))
+            {
+                // If no text is found in this node, it must be a ending conversation node.
+                EndConversation();
+                return;
+            }
 
-            List<Choice> choices = conversationTree.GetChoices();
+
+            dialogueOwner.GetComponent<Text>().text = dialogueOwnerName;
+            dialogueText.GetComponent<Text>().text = currentDialogue;
+
 
             // Clear choice button panel:
             // Clean panel first
@@ -179,8 +124,11 @@ namespace RPG.Dialogue
                 Destroy(child.gameObject);
             }
 
+            List<Choice> choices = conversationTree.GetChoices();
             if (choices.Count > 1)
             {
+                arrow.SetActive(false);
+
                 // CHOICES EXIST. DRAW BUTTONS.
 
                 foreach (Choice c in choices)
@@ -196,6 +144,10 @@ namespace RPG.Dialogue
                     });
                 }
 
+            }
+            else
+            {
+                arrow.SetActive(true);
             }
 
         }

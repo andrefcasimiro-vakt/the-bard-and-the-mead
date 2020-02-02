@@ -16,6 +16,7 @@ namespace RPG.Dialogue.Core {
 
         private DialogueGraphView _graphView;
 
+        private TextField _fileNameTextField;
         private string _fileName = "New Narrative";
 
         [MenuItem("Graph/Dialogue Graph")]
@@ -136,18 +137,19 @@ namespace RPG.Dialogue.Core {
         void LoadDialogue(string fileName)
         {
             _fileName = fileName;
+            _fileNameTextField.SetValueWithoutNotify(fileName);
             RequestDataOperation(false);
         }
 
         private TextField ConstructFileNameField()
         {
-            var textField = new TextField("");
-            textField.SetValueWithoutNotify("");
-            textField.MarkDirtyRepaint();
-            textField.RegisterValueChangedCallback(evt => _fileName = evt.newValue);
-            textField.name = "fileName";
+            _fileNameTextField = new TextField("");
+            _fileNameTextField.SetValueWithoutNotify("");
+            _fileNameTextField.MarkDirtyRepaint();
+            _fileNameTextField.RegisterValueChangedCallback(evt => _fileName = evt.newValue);
+            _fileNameTextField.name = "fileName";
 
-            return textField;
+            return _fileNameTextField;
         }
 
         /// <summary>
