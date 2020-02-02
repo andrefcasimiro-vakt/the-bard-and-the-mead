@@ -1,70 +1,82 @@
 using UnityEngine;
 using UnityEngine.UI;
-using RPG.Core;
-using RPG.Control;
 using RPG.AI;
 
+using RPG.Dialogue.Core;
+
 namespace RPG.Dialogue {
+
     public class ConversationManager : MonoBehaviour {
+
+        public DialogueUI dialogueUi;
+
+        public ScriptableObject dialogue;
+
         [SerializeField]
-        string dialogueOwnerName = "";
+        string dialogueOwnerName;
 
         [SerializeField]
         GameObject actionUI;
 
         [SerializeField]
         GameObject dialogueOwner;
-        AIController aIController;
-        Health dialogueOwnerHealth;
 
-        GameObject player;
-        
-        bool enabled = true;
+        public GameObject camera;
+
         bool dialogueInProgress = false;
-        
+        bool playerIsNear = false;
+
         void Start()
         {
-            player = GameObject.FindWithTag("Player");
-        
-            aIController = dialogueOwner.GetComponent<AIController>();
-            dialogueOwnerHealth = dialogueOwner.GetComponent<Health>();
-        }
+            camera.SetActive(false);
 
-        void Update()
-        {
-            // Disable conversation if character dies
-            if (dialogueOwnerHealth.IsDead())
+            if (string.IsNullOrEmpty(dialogueOwnerName))
             {
-                actionUI.GetComponent<Text>().text = "";
-                this.gameObject.SetActive(false);
+                dialogueOwnerName = dialogueOwner.name;
             }
         }
 
         public void OnDialogueStart()
         {
-            if (dialogueInProgress)
-            {
-                return;
-            }
+            dialogueOwner.GetComponent<AIController>().SetState(StateMachineEnum.CHAT);
 
-            // Make player and dialogue owner face each other
-            aIController.SetState(StateMachineEnum.CHAT);
-            player.transform.LookAt(dialogueOwner.transform);
-
-            // Cleanup Action UI popup text
             actionUI.GetComponent<Text>().text = "";
 
-            // Set dialogueInProgress so we don't retrigger the conversation whilst it is happening
+            // Set a new dialogue for the dialogue ui
+            dialogueUi.SetConversation(new ConversationTree((DialogueContainer) dialogue), dialogueOwnerName, camera);
+
             dialogueInProgress = true;
+
+        }
+
+        private void Update()
+        {
+
+            if (playerIsNear)
+            {
+                    if (Input.GetKeyDown(KeyCode.E) && !dialogueInProgress)
+                    {
+                        OnDialogueStart();
+                    }
+            }
+
+            if (dialogueInProgress)
+            {
+                if (dialogueUi.conversationTree == null || dialogueUi.conversationTree.dialogueContainer == null)
+                {
+                    OnDialogueFinish();
+                }
+            }
         }
 
         public void OnDialogueFinish()
         {
             // Restore AI previous state that was set before the conversation took place
-            aIController.SetPreviousState();
+            dialogueOwner.GetComponent<AIController>().SetPreviousState();
 
-            // Reset dialogueInProgress to false now that the conversation has ended
             dialogueInProgress = false;
+
+            DrawGUI();
         }
 
         // UI Action Popup Logic
@@ -72,9 +84,8 @@ namespace RPG.Dialogue {
         {
             if (col.gameObject.tag == "Player" && dialogueInProgress == false)
             {
-                actionUI.GetComponent<Text>().text = dialogueOwnerName != "" 
-                    ? "E) Talk with " + dialogueOwnerName 
-                    : "E) Talk";
+                playerIsNear = true;
+                DrawGUI();
             }
         }
 
@@ -83,7 +94,16 @@ namespace RPG.Dialogue {
             if (col.gameObject.tag == "Player")
             {
                 actionUI.GetComponent<Text>().text = "";
+                playerIsNear = false;
             }
+        }
+
+
+        public void DrawGUI()
+        {
+            actionUI.GetComponent<Text>().text = dialogueOwnerName != ""
+                ? "E) Talk with " + dialogueOwnerName
+                : "E) Talk";
         }
 
     }
