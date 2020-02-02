@@ -11,6 +11,9 @@ using UnityEditor.Experimental.GraphView;
 namespace RPG.Dialogue.Core {
     public class DialogueGraph : EditorWindow
     {
+        // Resources
+        private string searchModalIcon = "SearchModalIcon";
+
         private DialogueGraphView _graphView;
 
         private string _fileName = "New Narrative";
@@ -20,7 +23,6 @@ namespace RPG.Dialogue.Core {
         {
             var window = GetWindow<DialogueGraph>();
             window.titleContent = new GUIContent("Dialogue Graph");
-
         }
 
         private void OnEnable()
@@ -28,17 +30,7 @@ namespace RPG.Dialogue.Core {
             ConstructGraphView();
             GenerateToolbar();
             GenerateMiniMap();
-        }
 
-        private void GenerateMiniMap()
-        {
-            var miniMap = new MiniMap
-            {
-                anchored = true,
-            };
-
-            miniMap.SetPosition(new Rect(10, 30, 200, 140));
-            _graphView.Add(miniMap);
         }
 
         private void OnDisable()
@@ -46,39 +38,135 @@ namespace RPG.Dialogue.Core {
             rootVisualElement.Remove(_graphView);
         }
 
+        /// <summary>
+        ///  Generates the toolbar with several editing functionalities.
+        /// </summary>
         private void GenerateToolbar()
         {
             var toolbar = new Toolbar();
 
-            // Add File Name Text Field
-            var fileNameTextField = new TextField("File Name: ");
-            fileNameTextField.SetValueWithoutNotify("New Narrative");
-            fileNameTextField.MarkDirtyRepaint();
-            fileNameTextField.RegisterValueChangedCallback(evt => _fileName = evt.newValue);
-            toolbar.Add(fileNameTextField);
+            // ==> FILE SEARCH <=========================
 
-            toolbar.Add(new Button(() =>
-            {
-                RequestDataOperation(true);
-            })
-            { text = "Save Data" });
-            toolbar.Add(new Button(() =>
-            {
-                RequestDataOperation(false);
-            })
-            { text = "Load Data" });
+            // Add File Name Text Field
+            toolbar.Add(ConstructFileNameField());
 
             // Create Node Button
-            var nodeCreateButton = new Button(() =>
+            var searchButton = new Button(() => HandleSearch())
             {
-                _graphView.CreateNode("Dialogue Node");
-            });
+                text = "Search",
+                name = "searchButton"
+            };
+            toolbar.Add(searchButton);
 
-            nodeCreateButton.text = "Create Node";
+
+
+            // ==> DATA MANAGEMENT <=========================
+
+            // Create Save Button
+            toolbar.Add(new Button(() => RequestDataOperation(true)) { text = "Save Data" });
+
+            // Create Load Button
+            toolbar.Add(new Button(() => RequestDataOperation(false)) { text = "Load Data" });
+
+
+
+            // ==> CREATE NEW NODE <=========================
+
+            // Create Node Button
+            var nodeCreateButton = new Button(() => _graphView.CreateNode("Dialogue Node"))
+            {
+                text = "Create Node",
+                tooltip = "Creates a new dialogue node.",
+                name = "createNode"
+            };
             toolbar.Add(nodeCreateButton);
+
+
+            // Add style to toolbar
+            toolbar.styleSheets.Add(Resources.Load<StyleSheet>("Toolbar"));
+
+            // Register toolbar
             rootVisualElement.Add(toolbar);
         }
 
+        private void HandleSearch()
+        {
+            // Checks if any window of type MyWindow is open
+            if (SearchWindow.HasOpenInstances<SearchWindow>())
+            {
+                var _window = SearchWindow.GetWindow(typeof(SearchWindow));
+                _window.Close();
+            }
+
+            SearchWindow window = (SearchWindow)SearchWindow.GetWindow(typeof(SearchWindow));
+
+            window.titleContent = new GUIContent("Search", (Texture2D)Resources.Load<Texture2D>(searchModalIcon));
+
+            window.Show();
+
+            AddFilesToSearch(window);
+        }
+
+        private void AddFilesToSearch(SearchWindow window)
+        {
+            DialogueContainer[] targetFiles = Resources.FindObjectsOfTypeAll<DialogueContainer>();
+
+            List<string> fileNames = new List<string>();
+            foreach(DialogueContainer t in targetFiles)
+            {
+                if (!fileNames.Contains(t.name))
+                    fileNames.Add(t.name);
+            }
+
+            foreach(string f in fileNames)
+            {
+                var btn = new Button(() =>
+                {
+                    LoadDialogue(f);
+                })
+                {
+                    text = f
+                };
+
+                window.rootVisualElement.Add(btn);
+            }
+
+        }
+
+        void LoadDialogue(string fileName)
+        {
+            _fileName = fileName;
+            RequestDataOperation(false);
+        }
+
+        private TextField ConstructFileNameField()
+        {
+            var textField = new TextField("");
+            textField.SetValueWithoutNotify("");
+            textField.MarkDirtyRepaint();
+            textField.RegisterValueChangedCallback(evt => _fileName = evt.newValue);
+            textField.name = "fileName";
+
+            return textField;
+        }
+
+        /// <summary>
+        /// Generates a mini map on the top-left sideof the graph editor.
+        /// </summary>
+        private void GenerateMiniMap()
+        {
+            var miniMap = new MiniMap
+            {
+                anchored = true,
+            };
+
+            miniMap.SetPosition(new Rect(10, 40, 200, 140));
+            _graphView.Add(miniMap);
+        }
+
+        /// <summary>
+        /// Instantiates a new instance of DialogueGraphView
+        /// </summary>
         private void ConstructGraphView()
         {
             _graphView = new DialogueGraphView
@@ -90,7 +178,10 @@ namespace RPG.Dialogue.Core {
             rootVisualElement.Add(_graphView);
         }
 
-
+        /// <summary>
+        /// Save / Load request operation.
+        /// </summary>
+        /// <param name="save">Bool to decide if saveUtility should call save or load method.</param>
         private void RequestDataOperation(bool save)
         {
             if (string.IsNullOrEmpty(_fileName))

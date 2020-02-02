@@ -1,0 +1,35 @@
+Toolbar {
+	min-height: 30px;
+	margin-top: 1px;
+	margin-left: 1px;
+
+	padding: 2px 0px;
+	background-color: rgb(90, 160, 126);
+
+	flex-direction: row;
+	width: 100%;
+	justify-content: flex-start;
+
+}
+
+Button {
+	min-height: 24px;
+}
+
+Toolbar #createNode {
+	position: absolute;
+	right: 0;
+	margin-right: 10px;
+	margin-top: 2px;
+}
+
+Toolbar #fileName {
+	margin-left: 10px;
+	min-width: 120px;
+	color: red;
+}
+
+Toolbar #searchButton {
+	margin-right: 50px;
+}
+
