@@ -1,34 +1,40 @@
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.AI;
-
 using RPG.Dialogue.Core;
+using RPG.Events;
+using System.Collections.Generic;
 
 namespace RPG.Dialogue {
 
     public class ConversationManager : MonoBehaviour {
 
-        public DialogueUI dialogueUi;
+        [Header("UI")]
+        [Tooltip("The dialogue canvas user-interface")]
+        public DialogueUI dialogueUI;
 
+        [Tooltip("The prompt action canvas that tells the player how to initiate the dialogue. E. g. Press E to talk.")]
+        [SerializeField]  GameObject actionUI;
+
+        [Header("Conversation")]
         public ScriptableObject dialogue;
 
-        [SerializeField]
-        string dialogueOwnerName;
+        [Header("Conversation Settings")]
+        [SerializeField] GameObject dialogueOwner;
+        [SerializeField] string dialogueOwnerName;
+        [SerializeField] GameObject defaultCutsceneCamera;
 
+        [Header("Events")]
         [SerializeField]
-        GameObject actionUI;
+        List<E_Event> events = new List<E_Event>();
 
-        [SerializeField]
-        GameObject dialogueOwner;
-
-        public GameObject cutsceneCamera;
 
         bool dialogueInProgress = false;
         bool playerIsNear = false;
 
         void Start()
         {
-            cutsceneCamera.SetActive(false);
+            defaultCutsceneCamera.SetActive(false);
 
             if (string.IsNullOrEmpty(dialogueOwnerName))
             {
@@ -43,7 +49,14 @@ namespace RPG.Dialogue {
             actionUI.GetComponent<Text>().text = "";
 
             // Set a new dialogue for the dialogue ui
-            dialogueUi.SetConversation(new ConversationTree((DialogueContainer) dialogue), dialogueOwnerName, cutsceneCamera);
+            dialogueUI.SetConversation(
+                new ConversationTree(
+                    (DialogueContainer) dialogue,
+                    dialogueOwnerName,
+                    defaultCutsceneCamera,
+                    events
+                )
+            );
 
             dialogueInProgress = true;
 
@@ -62,7 +75,7 @@ namespace RPG.Dialogue {
 
             if (dialogueInProgress)
             {
-                if (dialogueUi.conversationTree == null || dialogueUi.conversationTree.dialogueContainer == null)
+                if (dialogueUI.conversationTree == null || dialogueUI.conversationTree.dialogueContainer == null)
                 {
                     OnDialogueFinish();
                 }
@@ -98,13 +111,11 @@ namespace RPG.Dialogue {
             }
         }
 
-
         public void DrawGUI()
         {
             actionUI.GetComponent<Text>().text = dialogueOwnerName != ""
                 ? "E) Talk with " + dialogueOwnerName
                 : "E) Talk";
         }
-
     }
 }

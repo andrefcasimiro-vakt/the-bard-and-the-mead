@@ -12,6 +12,7 @@ using UnityEditor.Experimental.GraphView;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using RPG.Events;
 
 namespace RPG.Dialogue
 {
@@ -19,12 +20,44 @@ namespace RPG.Dialogue
     public class ConversationTree
     {
 
+        public const string EVENT_PREFIX = "EV_";
+
+        /// <summary>
+        /// The conversation node data
+        /// </summary>
         public DialogueContainer dialogueContainer;
+
+        /// <summary>
+        /// The conversation owner name
+        /// </summary>
+        public string dialogueOwnerName;
+
+        /// <summary>
+        /// The conversation default cutscene camera
+        /// </summary>
+        public GameObject dialogueCamera;
+
+        /// <summary>
+        /// The list of events to dispatch across the conversation
+        /// </summary>
+        public List<E_Event> events = new List<E_Event>();
+
+        /// <summary>
+        /// The current index of the conversation
+        /// </summary>
         public string currentBaseNodeGuid;
 
-        public ConversationTree(DialogueContainer d)
+        public ConversationTree(
+            DialogueContainer dialogueContainer,
+            string dialogueOwnerName,
+            GameObject dialogueCamera,
+            List<E_Event> events
+        )
         {
-            this.dialogueContainer = d;
+            this.dialogueContainer = dialogueContainer;
+            this.dialogueOwnerName = dialogueOwnerName;
+            this.dialogueCamera = dialogueCamera;
+            this.events = events;
 
             if (currentBaseNodeGuid == null)
             {
@@ -59,6 +92,11 @@ namespace RPG.Dialogue
             });
 
             return choices;
+        }
+
+        public string GetEventId()
+        {
+            return GetCurrentText().StartsWith(EVENT_PREFIX) ? GetCurrentText() : null;
         }
     }
 }

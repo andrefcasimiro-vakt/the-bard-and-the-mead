@@ -78,11 +78,14 @@ namespace RPG.Character {
         [Header("Skin Tone")]
         public string Etnicity_Prefix = "";
 
+        [Header("Gender")]
+        public CharacterGenderEnum gender = CharacterGenderEnum.MALE;
+
         void Start()
         {
             placeholder.SetActive(false);
 
-            string genderPrefix = GetComponent<BaseStats>().IsMale() ? "_Male" : "_Female";
+            string genderPrefix = gender == CharacterGenderEnum.MALE ? "_Male" : "_Female";
 
             characterBody.Add(new CharacterBody(BodyPart.Head, AddGenderToBodyPrefix(Head_Prefix, genderPrefix) ));
             characterBody.Add(new CharacterBody(BodyPart.Torso, AddGenderToBodyPrefix(Torso_Prefix, genderPrefix) ));
@@ -99,7 +102,6 @@ namespace RPG.Character {
             characterBody.Add(new CharacterBody(BodyPart.Hair, Hair_Prefix));
             characterBody.Add(new CharacterBody(BodyPart.Eyebrows, Eyebrows_Prefix));
             characterBody.Add(new CharacterBody(BodyPart.Beard, Beard_Prefix));
-
 
             BuildCharacter();
         }

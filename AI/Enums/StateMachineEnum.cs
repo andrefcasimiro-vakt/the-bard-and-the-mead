@@ -8,6 +8,7 @@ namespace RPG.AI {
         REST,
         COMBAT,
         TAKE_DAMAGE,
-        ARRIVED_AT_PLAYER
+        ARRIVED_AT_PLAYER,
+        CUSTOM_ACTION
     }
 }

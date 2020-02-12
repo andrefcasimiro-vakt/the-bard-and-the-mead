@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
+using RPG.Events;
 
 namespace RPG.Dialogue
 {
@@ -38,14 +40,11 @@ namespace RPG.Dialogue
             }
         }
 
-        public void SetConversation(ConversationTree c, string dialogueOwner, GameObject camera)
+        public void SetConversation(ConversationTree conversationTree)
         {
             player.SetActive(false);
-            conversationTree = c;
-            cutsceneCamera = camera;
-            dialogueOwnerName = dialogueOwner;
-            cutsceneCamera.SetActive(true);
-
+            this.conversationTree = conversationTree;
+            this.conversationTree.dialogueCamera.SetActive(true);
 
             Toggle(true);
 
@@ -59,16 +58,16 @@ namespace RPG.Dialogue
         {
             player.SetActive(true);
 
-            conversationTree = null;
+            this.conversationTree.dialogueCamera.SetActive(false);
 
-            cutsceneCamera.SetActive(false);
-            cutsceneCamera = null;
+            this.conversationTree = null;
 
             Toggle(false);
-            repaint = false;
 
             UnityEngine.Cursor.lockState = CursorLockMode.Locked;
             UnityEngine.Cursor.visible = false;
+
+            repaint = false;
         }
 
         private void Update()
@@ -80,7 +79,6 @@ namespace RPG.Dialogue
 
             if (repaint == true) { 
                 ManageDialogue();
-                repaint = false;
             }
 
             if (
@@ -90,20 +88,52 @@ namespace RPG.Dialogue
                 Input.GetButtonDown("Fire1")
             )
             {
-                List<Choice> choices = conversationTree.GetChoices();
-
-                if (choices.Count <= 1)
-                {
-
-                    string id = choices.Count == 1 ? choices[0].targetGUID : null;
-
-                    Advance(id);
-                }
+                AdvanceOnClick();
             }
         }
 
+        /// <summary>
+        /// Advances conversation when there are no multiple choices
+        /// </summary>
+        public void AdvanceOnClick()
+        {
+            List<Choice> choices = conversationTree.GetChoices();
+
+            if (choices.Count <= 1)
+            {
+
+                string id = choices.Count == 1 ? choices[0].targetGUID : null;
+
+                Advance(id);
+            }
+        }
+
+
         private void ManageDialogue()
         {
+            // Is Event?
+            string eventId = conversationTree.GetEventId();
+            if (eventId != null)
+            {
+                E_Event ev = null;
+                foreach (E_Event e in conversationTree.events)
+                {
+                    if (e.eventId == eventId)
+                    {
+                        ev = e;
+                    }
+                }
+
+                if (ev != null)
+                {
+                    ev.Dispatch();
+
+                    // No choices possible in a event trigger node, so we advance the conversation.
+                    AdvanceOnClick();
+                    return;
+                }
+            }
+
             string currentDialogue = conversationTree.GetCurrentText();
             if (string.IsNullOrEmpty(currentDialogue))
             {
@@ -112,10 +142,8 @@ namespace RPG.Dialogue
                 return;
             }
 
-
-            dialogueOwner.GetComponent<Text>().text = dialogueOwnerName;
+            dialogueOwner.GetComponent<Text>().text = conversationTree.dialogueOwnerName;
             dialogueText.GetComponent<Text>().text = currentDialogue;
-
 
             // Clear choice button panel:
             // Clean panel first
@@ -150,10 +178,13 @@ namespace RPG.Dialogue
                 arrow.SetActive(true);
             }
 
+            // Careful with race conditions
+            repaint = false;
         }
 
         void Advance(string targetGuid)
         {
+            // No text left? End Conversation
             if (string.IsNullOrEmpty(targetGuid))
             {
                 EndConversation();

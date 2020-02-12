@@ -108,6 +108,9 @@ namespace RPG.AI {
                 case StateMachineEnum.CHAT:
                     ChatBehaviour();
                     break;
+                case StateMachineEnum.CUSTOM_ACTION:
+                    CustomActionBehaviour();
+                    break;
                 case StateMachineEnum.IDLE:
                 default:
                     return;
@@ -121,27 +124,7 @@ namespace RPG.AI {
             state = StateMachineEnum.CHASE;
         }
 
-        // Setters
-        public void SetState(StateMachineEnum nextState)
-        {
-            previousState = state;
-            state = nextState;
-        }
-        public void SetPreviousState()
-        {
-            state = previousState;
-        }
-
-        // Getters
-        public StateMachineEnum GetCurrentState()
-        {
-            return state;
-        }
-
         // FSM Behaviour Logic
-
-
-        // =====================> MOVEMENT RELATED
         void PatrolBehaviour()
         {
             Vector3 nextPosition = originalPosition;
@@ -214,8 +197,30 @@ namespace RPG.AI {
         void ChatBehaviour()
         {
             transform.LookAt(player.transform);
-            
+
             movement.Cancel();
+        }
+
+        void CustomActionBehaviour()
+        {
+            movement.Cancel();
+        }
+
+        // Public
+        public void SetState(StateMachineEnum nextState)
+        {
+            previousState = state;
+            state = nextState;
+        }
+        public void SetPreviousState()
+        {
+            state = previousState;
+        }
+
+        // Getters
+        public StateMachineEnum GetCurrentState()
+        {
+            return state;
         }
 
         // Private
@@ -252,6 +257,7 @@ namespace RPG.AI {
             Gizmos.DrawWireSphere(transform.position, chaseDistance);
         }
 
+        // Save System
         public object CaptureState()
         {
             return new SaveableAgent(transform.position, GetCurrentState());
