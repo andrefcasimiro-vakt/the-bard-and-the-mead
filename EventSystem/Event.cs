@@ -19,12 +19,25 @@ namespace RPG.EventSystem {
         public LocalSwitch localSwitch;
 
         [Header("List of events")]
-        public List<E_Event> customEvents = new List<E_Event>();
+        List<Template> customEvents = new List<Template>();
 
         private bool isRunning = false;
 
+        // Register all events in the component 
+        void Awake() {
+            foreach (MonoBehaviour script in gameObject.GetComponents<MonoBehaviour>())
+            {
+                Template s = script as Template;
+                if (s != null) {
+                    customEvents.Add(s);
+                }
+            }
+        }
+
         private void Start()
         {
+            
+
             if (processType == ProcessType.AUTOMATIC)
             {
                 Initialize();
@@ -56,16 +69,12 @@ namespace RPG.EventSystem {
 
         IEnumerator DispatchEvents()
         {
-            print("Initializing cutscene");
-            foreach(E_Event _event in customEvents)
+            foreach(Template ev in customEvents)
             {
-                yield return StartCoroutine(_event.Dispatch());
+                yield return StartCoroutine(ev.Dispatch());
             }
 
             isRunning = false;
         }
-
-
-
     }
 }

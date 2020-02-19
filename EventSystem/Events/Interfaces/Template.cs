@@ -8,15 +8,10 @@ using UnityEngine.EventSystems;
 
 namespace RPG.EventSystem
 {
-    
     [System.Serializable]
-    public class E_CustomEvent : E_Template
+    public class Template : MonoBehaviour
     {
-        public UnityEvent _event;
-
-        public override IEnumerator Dispatch()
-        {
-            _event.Invoke();
+        public virtual IEnumerator Dispatch() {
             yield return null;
         }
     }
