@@ -81,9 +81,12 @@ namespace RPG.Character {
         [Header("Gender")]
         public CharacterGenderEnum gender = CharacterGenderEnum.MALE;
 
-        void Start()
+        // Needs to be loaded before Start because some scripts depend on this
+        void Awake()
         {
-            placeholder.SetActive(false);
+            if (placeholder != null) {
+                placeholder.SetActive(false);
+            }
 
             string genderPrefix = gender == CharacterGenderEnum.MALE ? "_Male" : "_Female";
 
@@ -128,6 +131,7 @@ namespace RPG.Character {
 
         public void TogglePart(BodyPart bodyPart, bool value)
         {
+            print(bodyPart);
             characterBody.Find(c => c.id == bodyPart).gameObject.SetActive(value);
         }
 

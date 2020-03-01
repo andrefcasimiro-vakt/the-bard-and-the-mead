@@ -274,6 +274,10 @@ namespace RPG.AI {
 
             SetState(loadedState.currentState);
         }
+
+        public void OnCleanState() {
+
+        }
     }
 
     // For the saving system

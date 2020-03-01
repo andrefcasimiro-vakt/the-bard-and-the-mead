@@ -20,6 +20,10 @@ namespace RPG.EventSystem {
         [Header("UI Dependencies")]
         public GameObject DisplayTextUI_Prefab;
 
+        [Header("SFX")]
+        public AudioClip typewriterSoundClip;
+        public AudioClip audioClipOnInput;
+
         private void Start()
         {
             letterPause = (float)(letterPause * 0.01);
@@ -36,6 +40,10 @@ namespace RPG.EventSystem {
 
             Text textComponent = DisplayTextUIInstance.GetComponentInChildren<Text>();
 
+
+
+            AudioSource audioSource = this.gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
+
             // Add actor name
             if (!(string.IsNullOrEmpty(actorName))) { 
                 textComponent.text = actorName + ":";
@@ -49,11 +57,16 @@ namespace RPG.EventSystem {
                     // Delay Case
                     if (letter.ToString() == PauseCharacter)
                     {
+                        // If you want more pause, just add more pausecharacters: "Pause@@@@..."
                         yield return new WaitForSeconds(1);
                     }
                     else
                     {
                         textComponent.text += letter;
+
+                        if (typewriterSoundClip != null) {
+                            audioSource.PlayOneShot(typewriterSoundClip);
+                        }
                         yield return new WaitForSeconds(letterPause);
                     }
                 }
@@ -68,7 +81,14 @@ namespace RPG.EventSystem {
                 arrow.GetComponent<Image>().enabled = true;
 
             // Wait for user input to continue
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.Space));
+            yield return new WaitUntil(() => HasPressedKey());
+
+            if (audioClipOnInput != null) {
+                audioSource.clip = audioClipOnInput;
+
+                yield return new WaitForSeconds(audioClipOnInput.length);
+                audioSource.Play();
+            }
 
             // Play exit animation for UI
             DisplayTextUIInstance.GetComponentInChildren<Animator>().SetTrigger("Exit");
@@ -77,9 +97,21 @@ namespace RPG.EventSystem {
 
             // Destroy UI
             Destroy(DisplayTextUIInstance);
+            Destroy(audioSource);
 
             // End event
             yield return null;
+        }
+
+        public bool HasPressedKey() {
+            return (
+                Input.GetButtonDown("Action")
+                || Input.GetKeyDown(KeyCode.E)
+                || Input.GetKeyDown(KeyCode.KeypadEnter)
+                || Input.GetKeyDown(KeyCode.Return)
+                || Input.GetKeyDown(KeyCode.Space)
+                || Input.GetButtonDown("Fire1")
+            );
         }
 
     }

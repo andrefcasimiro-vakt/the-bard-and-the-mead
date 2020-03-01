@@ -35,14 +35,10 @@ namespace RPG.Inventory
 
             equipmentGraphic.SetActive(true);
 
-            if (equipmentGraphic != null)
-            {
-                equipmentGraphic.gameObject.SetActive(true);
-            }
-
-
             CharacterGraphic charGraphic = target.GetComponent<CharacterGraphic>();
             ToggleBodyPart(charGraphic, bodyPart, false);
+
+            target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, this);
         }
 
         public void Unequip(GameObject target)
@@ -65,6 +61,8 @@ namespace RPG.Inventory
 
             CharacterGraphic charGraphic = target.GetComponent<CharacterGraphic>();
             ToggleBodyPart(charGraphic, bodyPart, true);
+
+            target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, null);
         }
 
             

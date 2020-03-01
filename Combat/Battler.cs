@@ -28,7 +28,7 @@ namespace RPG.Combat {
 
         public void Attack()
         {
-            weaponManager.Attack(gruntAudioClip);
+            StartCoroutine(ExecuteAttack());
         }
 
         public void Defend()
@@ -45,6 +45,21 @@ namespace RPG.Combat {
 
             stamina.DecreaseStamina(dodgeStaminaCost * 100f);
             StartCoroutine(ExecuteDodge());
+        }
+
+        IEnumerator ExecuteAttack()
+        {
+            weaponManager.Attack(gruntAudioClip);
+
+            // Stop movement when attacking
+            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+
+            yield return new WaitUntil(() => IsAttacking());
+            
+            yield return new WaitUntil(() => !IsAttacking());
+
+            // Restore movement
+            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
         }
 
         IEnumerator ExecuteDefense()

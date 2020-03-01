@@ -41,6 +41,13 @@ namespace RPG.Saving
             }
         }
 
+        public void OnCleanState() {
+            foreach (ISaveable saveable in GetComponents<ISaveable>())
+            {
+                saveable.OnCleanState();
+            }
+        }
+
 #if UNITY_EDITOR
         private void Update() {
             if (Application.IsPlaying(gameObject)) return;

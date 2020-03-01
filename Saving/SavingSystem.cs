@@ -77,12 +77,16 @@ namespace RPG.Saving
 
         private void RestoreState(Dictionary<string, object> state)
         {
+            
             foreach (SaveableEntity saveable in FindObjectsOfType<SaveableEntity>())
             {
                 string id = saveable.GetUniqueIdentifier();
+
                 if (state.ContainsKey(id))
                 {
                     saveable.RestoreState(state[id]);
+                } else {
+                    saveable.OnCleanState();
                 }
             }
         }

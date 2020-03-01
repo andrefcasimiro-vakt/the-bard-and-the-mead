@@ -95,5 +95,9 @@ namespace RPG.Core
         {
             this.currentStaminaPoints = (float)state;
         }
+
+        public void OnCleanState() {
+            
+        }
     }
 }

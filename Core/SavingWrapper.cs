@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using RPG.Saving;
-
 namespace RPG.Core
 {
 
@@ -15,8 +14,10 @@ namespace RPG.Core
         SavingSystem savingSystem;
         Fader fader;
 
+
         IEnumerator Start()
         {
+
            savingSystem = GetComponent<SavingSystem>();
            fader = FindObjectOfType<Fader>();
 

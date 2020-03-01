@@ -12,6 +12,8 @@ namespace RPG.Inventory
 
         public bool isCollected = false;
 
+        public bool equipOnPickup = false;
+
         private void OnTriggerEnter(Collider other)
         {
             if (other.gameObject.tag == "Player")
@@ -19,6 +21,14 @@ namespace RPG.Inventory
                 foreach (ScriptableItem item in itemsToPick)
                 {
                     other.GetComponent<CharacterInventory>().Add(item);
+
+                    ScriptableEquipment equipment = item as ScriptableEquipment;
+
+                    if (equipment != null) {
+                        if (equipOnPickup) {
+                            equipment.Equip(other.gameObject);
+                        }
+                    }
                 }
 
                 isCollected = true;
@@ -50,6 +60,10 @@ namespace RPG.Inventory
                 // If item was collected, deactivate this gameObject
                 Deactivate();
             }
+        }
+
+        public void OnCleanState() {
+            
         }
     }
 

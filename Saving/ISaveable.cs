@@ -4,5 +4,7 @@ namespace RPG.Saving
     {
         object CaptureState();
         void RestoreState(object state);
+
+        void OnCleanState();
     }
 }

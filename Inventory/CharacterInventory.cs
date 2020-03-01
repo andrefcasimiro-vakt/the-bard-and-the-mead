@@ -15,6 +15,15 @@ namespace RPG.Inventory
 
         public List<ScriptableItem> inventory = new List<ScriptableItem>();
 
+        void LoadDefaultEquipment() {
+            foreach(ScriptableItem item in inventory) {
+                ScriptableEquipment equipment = item as ScriptableEquipment;
+
+                if (equipment != null) {
+                    equipment.Equip(this.gameObject);
+                }
+            }
+        }
 
         // Public Methods
 
@@ -27,7 +36,14 @@ namespace RPG.Inventory
         {
             int index = inventory.FindLastIndex(i => i == itemToRemove);
             inventory.RemoveAt(index);
+        }
 
+        public ScriptableItem Find(ScriptableItem item) {
+            return inventory.Find(x => x == item);
+        }
+
+        public ScriptableItem FindByItemName(string itemName) {
+            return inventory.Find(x => x.itemName == itemName);
         }
 
 
@@ -39,6 +55,15 @@ namespace RPG.Inventory
             {
                 ScriptableItem _item = Resources.Load<ScriptableItem>(RESOURCE_ITEMS_PREFIX + itemName);
                 inventory.Add(_item);
+            }
+        }
+
+        private void LoadEquipments(string[] equipmentNames)
+        {
+            foreach (string equipmentName in equipmentNames)
+            {
+                ScriptableItem _equipment = Resources.Load<ScriptableItem>(RESOURCE_EQUIPMENTS_PREFIX + equipmentName);
+                inventory.Add(_equipment);
             }
         }
 
@@ -54,6 +79,7 @@ namespace RPG.Inventory
         private SaveableInventory CreateSaveableInventory()
         {
             List<string> items = new List<string>();
+            List<string> equipments = new List<string>();
             List<string> weapons = new List<string>();
 
             foreach (ScriptableItem item in inventory)
@@ -64,6 +90,12 @@ namespace RPG.Inventory
                     continue;
                 }
 
+                if (item.itemType == ItemEnum.EQUIPMENT)
+                {
+                    equipments.Add(item.name);
+                    continue;
+                }
+
                 if (item.itemType == ItemEnum.WEAPON)
                 {
                     weapons.Add(item.name);
@@ -71,7 +103,7 @@ namespace RPG.Inventory
                 }
             }
 
-            return new SaveableInventory(items.ToArray(), weapons.ToArray());
+            return new SaveableInventory(items.ToArray(), equipments.ToArray(), weapons.ToArray());
         }
 
         public object CaptureState()
@@ -86,7 +118,12 @@ namespace RPG.Inventory
             inventory.Clear();
 
             LoadItems(savedItems.items);
+            LoadEquipments(savedItems.equipments);
             LoadWeapons(savedItems.weapons);
+        }
+
+        public void OnCleanState() {
+            LoadDefaultEquipment();
         }
     }
 
@@ -94,11 +131,13 @@ namespace RPG.Inventory
     public class SaveableInventory
     {
         public string[] items;
+        public string[] equipments;
         public string[] weapons;
 
-        public SaveableInventory(string[] items, string[] weapons)
+        public SaveableInventory(string[] items, string[] equipments, string[] weapons)
         {
             this.items = items;
+            this.equipments = equipments;
             this.weapons = weapons;
         }
     }

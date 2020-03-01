@@ -114,6 +114,10 @@ namespace RPG.Core {
         {
             currentHealthPoints = (float)state;
         }
+
+        public void OnCleanState() {
+
+        }
     }
 
 }

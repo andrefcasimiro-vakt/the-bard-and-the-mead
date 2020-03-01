@@ -108,5 +108,9 @@ namespace RPG.Control {
             // Reapply saved position
             transform.position = position.ToVector();
         }
+
+        public void OnCleanState() {
+
+        }
     }
 }

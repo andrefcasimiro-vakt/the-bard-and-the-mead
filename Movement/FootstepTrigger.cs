@@ -9,8 +9,16 @@ namespace RPG.Movement {
         [SerializeField]
         FootstepManager footstepManager;
 
+        float volume = 0.2f;
+
+
         AudioSource audioSource => GetComponent<AudioSource>();
-        int soundIndex = 0;
+
+
+        void Start() {
+            audioSource.volume = volume;
+            footstepManager = GameObject.FindWithTag("FootstepManager").GetComponent<FootstepManager>();
+        }
 
         void OnTriggerEnter(Collider col)
         {
@@ -18,15 +26,10 @@ namespace RPG.Movement {
 
             if (ground != null)
             {
-                if (soundIndex >= ground.clips.Length)
-                {
-                    soundIndex = 0;
-                }
-
-                audioSource.clip = ground.clips[soundIndex];
+                AudioClip clip = ground.clips[(int)Random.Range(0, ground.clips.Length)];
+                Debug.Log(clip);
+                audioSource.clip = clip;
                 audioSource.Play();
-
-                soundIndex++;
             }
         }
 

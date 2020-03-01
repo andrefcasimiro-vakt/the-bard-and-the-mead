@@ -45,6 +45,10 @@ namespace RPG.Quest {
             LoadQuests(savedQuests);
         }
 
+        public void OnCleanState() {
+            
+        }
+
         public void LoadQuests(SaveableQuest[] savedQuests)
         {
             ScriptableQuest[] allExistingQuests = Resources.LoadAll<ScriptableQuest>("Quests");

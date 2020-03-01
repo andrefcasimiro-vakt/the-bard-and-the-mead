@@ -27,4 +27,8 @@ public class LocalSwitch : MonoBehaviour, ISaveable
     {
         ON = (bool)state;
     }
+
+    public void OnCleanState() {
+        
+    }
 }
