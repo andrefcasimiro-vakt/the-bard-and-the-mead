@@ -23,7 +23,7 @@ namespace RPG.Weapon {
         public void Enable() 
         {
             boxCollider.enabled = true;
-            meshRenderer.enabled = true;
+            // meshRenderer.enabled = true;
         }
 
         public void Disable() 

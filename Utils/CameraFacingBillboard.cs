@@ -7,6 +7,12 @@ namespace RPG.Utils
     {
         public Camera m_Camera;
 
+        void Start () {
+            if (m_Camera == null) {
+                m_Camera = GameObject.FindWithTag("MainCamera").GetComponent<Camera>();
+            }
+        }
+
         //Orient the camera after all movement is completed this frame to avoid jittering
         void LateUpdate()
         {

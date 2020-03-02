@@ -8,7 +8,7 @@ using System.Collections;
 
 namespace RPG.AI {
     
-    [RequireComponent(typeof(NavMeshAgent))]
+    /*[RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(AIMovement))]
     [RequireComponent(typeof(Battler))]
     [RequireComponent(typeof(Health))]
@@ -16,7 +16,7 @@ namespace RPG.AI {
     [RequireComponent(typeof(BehaviourCombat))]
     [RequireComponent(typeof(BehaviourTakeDamage))]
     [RequireComponent(typeof(BehaviourRunAway))]
-    [RequireComponent(typeof(BehaviourRest))]
+    [RequireComponent(typeof(BehaviourRest))]*/
     public class AIController : MonoBehaviour, ISaveable
     {
         [Header("Movement Settings")]

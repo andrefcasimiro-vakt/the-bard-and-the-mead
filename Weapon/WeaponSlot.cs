@@ -103,8 +103,6 @@ namespace RPG.Weapon {
             // Owner of weapon has enough stamina to perform next attack?
             Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
 
-            print(currentWeapon);
-
             bool canAttack =
                 ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost)
                 || !battler.IsTakingDamage()
