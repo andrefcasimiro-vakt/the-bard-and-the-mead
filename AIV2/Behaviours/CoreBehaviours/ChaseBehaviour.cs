@@ -46,8 +46,6 @@ namespace RPG.AIV2 {
             yield return null;
         }
 
-
-
         public IEnumerator Chase()
         {
             Vector3 destination = GetComponent<Vision>().GetLastKnownPositionOfPlayer();

@@ -3,6 +3,7 @@ using UnityEngine;
 using RPG.Core;
 using RPG.Combat;
 using RPG.Inventory;
+using RPG.AIV3;
 
 namespace RPG.Weapon {
 
@@ -170,6 +171,15 @@ namespace RPG.Weapon {
 
             // Play SFX
             audioSource.PlayOneShot(currentWeapon.hitSFX);
+
+             // AI Update
+            AI_Core_V3 targetAI = hitbox.target.GetComponent<AI_Core_V3>();
+
+            if (targetAI != null)
+            {
+                // Set the owner of the attack to be the next target of the AI that was hit
+                targetAI.TakeDamage(weaponOwner);
+            }
         }
 
         float GetHitboxActivationTime()

@@ -31,10 +31,6 @@ namespace RPG.Core {
         void Start()
         {
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
-
-            if (currentHealthPoints == 0f) {
-                currentHealthPoints = maxHealthPoints;
-            }
         }
 
         private void Update()
@@ -60,7 +56,6 @@ namespace RPG.Core {
             {
                 return;
             }
-
 
             currentHealthPoints = Mathf.Max(currentHealthPoints - damageAmount, 0);
 
@@ -113,10 +108,18 @@ namespace RPG.Core {
         public void RestoreState(object state)
         {
             currentHealthPoints = (float)state;
+
+            if (currentHealthPoints <= 0)
+            {
+                Die();
+            }
         }
 
         public void OnCleanState() {
-
+            maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
+            if (currentHealthPoints == 0f) {
+                currentHealthPoints = maxHealthPoints;
+            }
         }
     }
 

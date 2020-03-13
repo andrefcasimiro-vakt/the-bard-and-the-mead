@@ -10,9 +10,11 @@ using RPG.Core;
 using RPG.Combat;
 using RPG.Weapon;
 
-namespace RPG.AIV2 {
+namespace RPG.AIV2
+{
 
-    enum FightState {
+    enum FightState
+    {
         ATTACK,
         DEFEND,
         LOW_HEALTH,
@@ -20,7 +22,8 @@ namespace RPG.AIV2 {
         ON_PLAYER_DEFENDING,
     }
 
-    public class FightBehaviour : Behaviour {
+    public class FightBehaviour : Behaviour
+    {
 
         [SerializeField]
         FightState state;
@@ -33,6 +36,9 @@ namespace RPG.AIV2 {
 
         public float maxDecisionTime = 2f;
 
+        [Range(0, 1)]
+        public float minimumChanceToAttack = 0.5f;
+
         // Private
         GameObject player;
 
@@ -44,86 +50,19 @@ namespace RPG.AIV2 {
 
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
-        void Start() {
+        public bool isOcurring = false;
+
+        void Start()
+        {
             player = GameObject.FindWithTag("Player");
         }
 
-        public override IEnumerator Dispatch() {
-           
-            // Force battler to strafe
-            animator.SetBool("IsStrafing", true);
-
-            yield return new WaitUntil(
-                () => DecideNextMove()
-            );
-
-            yield return StartCoroutine(HandleState());
-
-
-            // Give a decision time before restarting loop
-            yield return new WaitForSeconds(
-                UnityEngine.Random.Range(0f, maxDecisionTime)
-            );
-
-            yield return null;
+        public override IEnumerator Dispatch()
+        {
+            yield return StartCoroutine(AttackBehaviour.Dispatch(this));
+            
+            yield return new WaitForSeconds(2f);
         }
-
-        public bool DecideNextMove() {
-
-            FacePlayer();
-
-            // Audit player first
-            if (player.GetComponent<Health>().IsDead())
-                return true;
-
-            if (health.IsLowHealth()) {
-                state = FightState.LOW_HEALTH;
-                return true;
-            }
-
-            if (PlayerIsFarAway()) {
-                aiCore.SetState(AIState.CHASE);
-                return true;
-            }
-
-            if (PlayerIsAttacking()) {
-                state = FightState.ON_PLAYER_ATTACK;
-                return true;
-            }
-
-            if (PlayerIsDefending()) {
-                state = FightState.ON_PLAYER_DEFENDING;
-                return true;
-            }
-
-            return true;
-        }
-
-
-        IEnumerator HandleState() {
-            switch (state) {
-                case FightState.ATTACK:
-                    StartCoroutine(AttackBehaviour.Dispatch());
-                    break;
-                case FightState.DEFEND:
-                    StartCoroutine(DefendBehaviour.Dispatch());
-                    break;
-                case FightState.LOW_HEALTH:
-                    StartCoroutine(LowHealthBehaviour.Dispatch());
-                    break;
-                case FightState.ON_PLAYER_ATTACK:
-                    StartCoroutine(OnPlayerAttackBehaviour.Dispatch());
-                    break;
-                case FightState.ON_PLAYER_DEFENDING:
-                    StartCoroutine(OnPlayerDefendingBehaviour.Dispatch());
-                    break;
-                default:
-                    break;
-            }
-            yield return null;
-        }
-
-        // Helpers
 
         bool PlayerIsFarAway()
         {
@@ -147,7 +86,7 @@ namespace RPG.AIV2 {
                 this.transform.position.y,
                 player.transform.position.z
             );
-            
+
             this.transform.LookAt(targetPosition);
         }
 

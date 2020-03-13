@@ -16,11 +16,8 @@ namespace RPG.AIV2 {
 
         public Behaviour customBehaviour = null;
 
-
-        public override IEnumerator Dispatch() {
-
-            StartCoroutine(customBehaviour.Dispatch());
-
+        public override IEnumerator Dispatch(FightBehaviour context) {
+            StartCoroutine(customBehaviour.Dispatch(context));
             yield return null;
         }
 

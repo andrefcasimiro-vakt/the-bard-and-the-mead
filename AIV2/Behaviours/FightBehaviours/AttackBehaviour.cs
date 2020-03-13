@@ -16,7 +16,7 @@ namespace RPG.AIV2 {
 
         Battler battler => GetComponent<Battler>();
 
-        public override IEnumerator Dispatch() {
+        public override IEnumerator Dispatch(FightBehaviour context) {
 
             battler.Attack();
 
@@ -26,7 +26,6 @@ namespace RPG.AIV2 {
             // Now Wait Until Attack Animation Is Over
             yield return new WaitUntil(() => battler.IsAttacking() == false);
 
-            yield return null;
         }
 
     }

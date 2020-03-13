@@ -131,7 +131,6 @@ namespace RPG.Character {
 
         public void TogglePart(BodyPart bodyPart, bool value)
         {
-            print(bodyPart);
             characterBody.Find(c => c.id == bodyPart).gameObject.SetActive(value);
         }
 

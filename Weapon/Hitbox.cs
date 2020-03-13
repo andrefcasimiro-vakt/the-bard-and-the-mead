@@ -36,7 +36,7 @@ namespace RPG.Weapon {
         {
             Health targetHealth = col.gameObject.GetComponent<Health>();
 
-            if (targetHealth != null)
+            if (targetHealth != null && targetHealth.IsDead() == false)
             {
                 target = col.gameObject;
                 OnHit.Invoke();

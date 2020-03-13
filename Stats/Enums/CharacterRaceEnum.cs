@@ -4,6 +4,7 @@ namespace RPG.Stats {
         ELF,
         DWARF,
         ORC,
-        ZOMBIE
+        ZOMBIE,
+        SLIME,
     }
 }

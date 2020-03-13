@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using RPG.Core;
+using UnityEngine.AI;
+using RPG.Saving;
 
 namespace RPG.AIV2 {
 
@@ -55,6 +57,12 @@ namespace RPG.AIV2 {
         }
 
         void HandleState() {
+
+            // Record changes of state
+            if (previousState != state) {
+                previousState = state;
+            }
+
             switch (state) {
                 case AIState.PATROL:
                     StartCoroutine(PatrolBehaviour.Dispatch());
@@ -76,11 +84,6 @@ namespace RPG.AIV2 {
                     break;
                 default:
                     break;
-            }
-
-            // Record changes of state
-            if (previousState != state) {
-                previousState = state;
             }
         }
 

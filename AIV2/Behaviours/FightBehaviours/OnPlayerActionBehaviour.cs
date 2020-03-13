@@ -20,14 +20,10 @@ namespace RPG.AIV2 {
         [Range(0f, 1f)]
         public float minimumChanceToDefendFromPlayer = 0.3f;
 
-        [Range(0f, 1f)]
-        public float minimumChanceToCustomBehaviour = 0.0f;
-
-        public Behaviour customBehaviour = null;
-
         Battler battler => GetComponent<Battler>();
 
-        public override IEnumerator Dispatch() {
+        public override IEnumerator Dispatch(FightBehaviour context) {
+            context.isOcurring = true;
 
             float chance = UnityEngine.Random.Range(0, 1);
 
@@ -40,7 +36,7 @@ namespace RPG.AIV2 {
                 // Now Wait Until Attack Animation Is Over
                 yield return new WaitUntil(() => battler.IsAttacking() == false);
             
-            } else if (chance >= minimumChanceToCustomBehaviour) {
+            } else {
                 battler.Defend();
 
                 // Wait Until We Trigger Attack Animation
@@ -49,16 +45,9 @@ namespace RPG.AIV2 {
                 // Now Wait Until Attack Animation Is Over
                 yield return new WaitUntil(() => battler.IsDefending() == false);
 
-            } else if (chance >= minimumChanceToCustomBehaviour) {
-
-                if (customBehaviour != null) {
-                    StartCoroutine(customBehaviour.Dispatch());
-                    yield return null;
-                }
-
             }
 
-            yield return null;
+            context.isOcurring = false;
         }
 
     }

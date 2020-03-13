@@ -1,0 +1,403 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.AI;
+using RPG.Core;
+using RPG.Combat;
+using RPG.Weapon;
+using RPG.AI;
+using RPG.Saving;
+using System.Linq;
+
+namespace RPG.AIV3 {
+
+    public class AI_Core_V3 : MonoBehaviour {
+
+        [Header("Vision Settings")]
+        [SerializeField] float fieldOfView = 110f;
+        [SerializeField] float minimumDistanceToCastVision = 10f;
+        [SerializeField] Vector3 targetLastKnownPosition;
+
+        [Header("Patrol Settings")]
+        [Range(0f, 10f)] [SerializeField] float maxSpeed = 3f;
+        [Range(0, 1)] [SerializeField] float patrolSpeedFraction = 0.2f;
+        [SerializeField] PatrolPath patrolPath = null;
+        [SerializeField] float waypointTolerance = 1f;
+        [SerializeField] float waypointDwellTime = 3f;
+        float timeSinceArrivedAtWaypoint = Mathf.Infinity;
+        int currentWaypointIndex = 0;
+        Vector3 originalPosition;
+
+        [Header("Chase Settings")]
+        [Range(0f, 10f)] [SerializeField] float chaseSpeed = 5f;
+        [SerializeField] float maxChasingDistance = 20f;
+        [SerializeField] float stoppingDistanceToPlayer = 1f;
+        [SerializeField] float staminaChasingCost = 3f;
+
+        [Header("Target")]
+        public string[] candidateTags;
+        [SerializeField] GameObject target;
+
+        [SerializeField] AGENT_STATE state = AGENT_STATE.PATROL;
+
+        // Private         
+        Health health => GetComponent<Health>();
+        Stamina stamina => GetComponent<Stamina>();
+        NavMeshAgent navMeshAgent => GetComponent<NavMeshAgent>();
+        Battler battler => GetComponent<Battler>();
+        WeaponManager weaponManager => GetComponent<WeaponManager>();
+
+        bool inProgress = false;
+        
+        void Start() {
+        }
+
+        void Update() {
+
+            if (health.IsDead()) {
+                GetComponent<CapsuleCollider>().enabled = false;
+                GetComponent<Battler>().enabled = false;
+                GetComponent<NavMeshAgent>().enabled = false;
+
+                // Can cause bugs if enemy dies in the air
+                GetComponent<Rigidbody>().isKinematic = true;
+
+                state = AGENT_STATE.DEAD;
+                return;
+            }
+
+            HandleFSM();
+        }
+
+        void HandleFSM() {
+
+            switch (state)
+            {
+                case AGENT_STATE.PATROL:
+                    Patrol();
+                    break;
+                case AGENT_STATE.CHASE:
+                    Chase();
+                    break;
+                case AGENT_STATE.FIGHTING:
+                    Fight();
+                    break;
+                case AGENT_STATE.DEAD:
+                default:
+                    return;
+            }
+
+            HandleMovement();
+
+            HandleVision();
+
+            GetComponent<Animator>().SetBool("IsStrafing", inProgress);
+        }
+
+
+        // Components
+
+        void HandleMovement() {
+            navMeshAgent.enabled = !health.IsDead();
+
+            // Update animator
+            Vector3 velocity = navMeshAgent.velocity;
+            Vector3 localVelocity = transform.InverseTransformDirection(velocity);
+
+            float speed = localVelocity.z;
+            GetComponent<Animator>().SetFloat("InputVertical", speed);   
+        }
+
+        void HandleVision() {
+            if (target && target.GetComponent<Health>().IsDead())
+            {
+                return;
+            }
+
+            bool castVision = !(
+                state == AGENT_STATE.FIGHTING
+            );
+
+            if (castVision == false)
+            {
+                return;
+            }
+
+
+            Vector3 direction = target != null
+                ? target.transform.position - transform.position
+                : transform.forward * minimumDistanceToCastVision - transform.position;
+
+            float angle = Vector3.Angle(direction, transform.forward);
+            if (angle < fieldOfView * 0.5f)
+            {
+                RaycastHit hit;
+
+                Vector3 ownHeight = GetComponent<Collider>().bounds.center;
+
+                if (Physics.Raycast(ownHeight, direction.normalized, out hit, minimumDistanceToCastVision))
+                {
+                    if (candidateTags.Contains(hit.collider.gameObject.tag))
+                    {
+                        target = hit.collider.gameObject;
+
+                        // Record last known position of player
+                        targetLastKnownPosition = hit.collider.gameObject.transform.position;
+
+                        // Chase Target
+                        state = AGENT_STATE.CHASE;
+                    }
+                }
+            }
+
+        }
+
+        // Behaviours
+
+        // PATROL
+        void Patrol() {
+            timeSinceArrivedAtWaypoint += Time.deltaTime;
+            Vector3 nextPosition = originalPosition;
+
+            if (patrolPath != null)
+            {
+                if (AtWaypoint()) {
+                    timeSinceArrivedAtWaypoint = 0f;
+                    CycleWaypoint();
+                }
+
+                nextPosition = GetCurrentWaypoint();
+            }
+
+            if (timeSinceArrivedAtWaypoint > waypointDwellTime) {
+                MoveTo(nextPosition);
+            }
+
+            return;
+        }
+
+        // PATROL (Utils)
+        void MoveTo(Vector3 destination)
+        {
+            navMeshAgent.speed = maxSpeed * Mathf.Clamp01(patrolSpeedFraction);
+            navMeshAgent.destination = destination;
+            navMeshAgent.isStopped = false;
+        }
+        void CycleWaypoint()
+        {
+            currentWaypointIndex = patrolPath.GetNextIndex(currentWaypointIndex);
+        }
+        bool AtWaypoint()
+        {
+            return Vector3.Distance(transform.position, GetCurrentWaypoint()) < waypointTolerance;
+        }
+        Vector3 GetCurrentWaypoint()
+        {
+            return patrolPath.GetWaypoint(currentWaypointIndex);
+        }
+
+        // CHASE
+        void Chase()
+        {
+            if (target == null) 
+            {
+                return;
+            }
+
+            Vector3 destination = targetLastKnownPosition;
+
+            float currentDistance = Vector3.Distance(target.transform.position, transform.position);
+
+            // Has reached target
+            if (currentDistance < stoppingDistanceToPlayer)
+            {
+                state = AGENT_STATE.FIGHTING;
+                return;
+            }
+
+            // Player escaped
+            if (currentDistance > maxChasingDistance)
+            {
+                state = AGENT_STATE.PATROL;
+                return;
+            }
+
+            // Has Stamina To Continue chase?
+            if (stamina.HasStaminaAgainstCostAction(staminaChasingCost))
+            {
+                MoveTo(destination);
+                stamina.DecreaseStamina(staminaChasingCost);
+            }
+            else
+            {
+                // Stamina depleted
+                return;
+            }
+        }
+
+        // FIGHTING
+        private void LateUpdate()
+        {
+
+            bool facePlayer = state == AGENT_STATE.CHASE || state == AGENT_STATE.FIGHTING;
+
+            if (facePlayer) {
+                FacePlayer();
+            }
+        }
+
+        void FacePlayer()
+        {
+            Vector3 targetPosition = new Vector3(target.transform.position.x,
+                                                   this.transform.position.y,
+                                                   target.transform.position.z);
+            this.transform.LookAt(targetPosition);
+        }
+
+        void Fight()
+        {
+            if (inProgress) {
+                return;
+            }
+
+            if (target == null) {
+                return;
+            }
+
+            if (target.GetComponent<Health>().IsDead())
+            {
+                return;
+            }
+        
+            if (TargetIsFarAway())
+            {
+                state = AGENT_STATE.CHASE;
+                return;
+            }
+
+            // If got hit
+            //                 transform.Translate(Vector3.back);
+
+
+            if (TargetIsAttacking() == true) {
+                if (UnityEngine.Random.Range(0f, 1f) > 0.5f)
+                {
+                    StartCoroutine(Defend());
+                }
+            }
+            else
+            {
+                StartCoroutine(Attack());
+            }
+        }
+
+        IEnumerator Attack()
+        {
+            inProgress = true;
+
+            battler.Attack();
+
+            // Wait Until We Trigger Attack Animation
+            yield return new WaitUntil(() => battler.IsAttacking() == true);
+
+            // Now Wait Until Attack Animation Is Over
+            yield return new WaitUntil(() => battler.IsAttacking() == false);
+
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
+
+            inProgress = false;
+
+            yield return null;
+        }
+        IEnumerator Defend()
+        {
+            inProgress = true;
+
+            battler.Defend();
+
+            // Wait Until We Trigger Attack Animation
+            yield return new WaitUntil(() => battler.IsDefending() == true);
+
+            // Now Wait Until Attack Animation Is Over
+            yield return new WaitUntil(() => battler.IsDefending() == false);
+
+            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
+            
+            inProgress = false;
+
+            yield return null;
+        }
+
+        // COMBAT Utils
+        public bool TargetIsFarAway()
+        {
+            return Vector3.Distance(target.transform.position, transform.position) > weaponManager.GetStoppingDistance();
+        }
+        bool TargetIsAttacking()
+        {
+            return target.GetComponent<Battler>().IsAttacking();
+        }
+
+        bool TargetIsDefending()
+        {
+            return target.GetComponent<Battler>().IsDefending();
+        }
+
+
+
+        // PUBLIC
+        public void SetState (AGENT_STATE state) {
+            this.state = state;
+        }
+
+        public void SetTarget (GameObject target) {
+            this.target = target;
+        }
+
+        public void TakeDamage(GameObject target) {
+            this.target = target;
+            state = AGENT_STATE.CHASE;
+        }
+
+        // Save System
+
+        public object CaptureState()
+        {
+            return new SaveableAgent(transform.position, state);
+        }
+
+        public void RestoreState(object state)
+        {
+            SaveableAgent savedState = (SaveableAgent)state;
+
+            // Reapply saved position
+            GetComponent<NavMeshAgent>().enabled = false;
+            transform.position = savedState.position.ToVector();
+            GetComponent<NavMeshAgent>().enabled = true;
+
+            state = savedState.currentState;
+        }
+    }
+
+    // Serializable Class
+    [System.Serializable]
+    public class SaveableAgent
+    {
+        public SerializableVector3 position;
+        public AGENT_STATE currentState;
+
+        public SaveableAgent(Vector3 position, AGENT_STATE currentState)
+        {
+            this.position = new SerializableVector3(position);
+            this.currentState = currentState;
+        }
+    }
+
+    public enum AGENT_STATE {
+        PATROL,
+        CHASE,
+        FIGHTING,
+        DEAD,
+    }
+
+}

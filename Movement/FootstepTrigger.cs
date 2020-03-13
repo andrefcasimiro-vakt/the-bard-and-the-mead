@@ -27,7 +27,6 @@ namespace RPG.Movement {
             if (ground != null)
             {
                 AudioClip clip = ground.clips[(int)Random.Range(0, ground.clips.Length)];
-                Debug.Log(clip);
                 audioSource.clip = clip;
                 audioSource.Play();
             }

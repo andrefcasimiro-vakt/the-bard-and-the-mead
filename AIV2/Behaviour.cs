@@ -11,6 +11,10 @@ namespace RPG.AIV2 {
             yield return null;
         }
 
+        public virtual IEnumerator Dispatch(FightBehaviour context) {
+            yield return null;
+        }
+
     }
 
 }

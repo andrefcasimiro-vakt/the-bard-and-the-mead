@@ -6,5 +6,6 @@ namespace RPG.Stats {
         ARCHER,
         MAGE,
         THIEF,
+        SLIME,
     }
 }
