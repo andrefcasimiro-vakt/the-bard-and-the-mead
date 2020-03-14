@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
-using RPG.AI;
+using RPG.AIV3;
 using RPG.Dialogue.Core;
 using RPG.Events;
 using System.Collections.Generic;
@@ -11,10 +11,13 @@ namespace RPG.Dialogue {
 
         [Header("UI")]
         [Tooltip("The dialogue canvas user-interface")]
-        public DialogueUI dialogueUI;
+        public GameObject dialogueUi;
+        GameObject instantiatedDialogueUi;
+        [HideInInspector] public DialogueUI dialogueUI;
 
         [Tooltip("The prompt action canvas that tells the player how to initiate the dialogue. E. g. Press E to talk.")]
-        [SerializeField]  GameObject actionUI;
+        [SerializeField] GameObject actionUI;
+        GameObject instantiatedActionUI;
 
         [Header("Conversation")]
         public ScriptableObject dialogue;
@@ -36,6 +39,10 @@ namespace RPG.Dialogue {
         {
             defaultCutsceneCamera.SetActive(false);
 
+            instantiatedDialogueUi = Instantiate(dialogueUi);
+            instantiatedActionUI = Instantiate(actionUI);
+
+
             if (string.IsNullOrEmpty(dialogueOwnerName))
             {
                 dialogueOwnerName = dialogueOwner.name;
@@ -44,9 +51,12 @@ namespace RPG.Dialogue {
 
         public void OnDialogueStart()
         {
-            dialogueOwner.GetComponent<AIController>().SetState(StateMachineEnum.CHAT);
+            instantiatedDialogueUi.SetActive(true);
+            dialogueUI = instantiatedDialogueUi.GetComponent<DialogueUI>();
 
-            actionUI.GetComponent<Text>().text = "";
+            dialogueOwner.GetComponent<AI_Core_V3>().SetState(AGENT_STATE.TALKING);
+
+            instantiatedActionUI.GetComponent<Text>().text = "";
 
             // Set a new dialogue for the dialogue ui
             dialogueUI.SetConversation(
@@ -84,11 +94,14 @@ namespace RPG.Dialogue {
 
         public void OnDialogueFinish()
         {
+            // TODO: Add previous state
             // Restore AI previous state that was set before the conversation took place
-            dialogueOwner.GetComponent<AIController>().SetPreviousState();
+            dialogueOwner.GetComponent<AI_Core_V3>().SetState(AGENT_STATE.PATROL);
 
             dialogueInProgress = false;
 
+
+            instantiatedDialogueUi.SetActive(false);
             DrawGUI();
         }
 
@@ -106,14 +119,14 @@ namespace RPG.Dialogue {
         {
             if (col.gameObject.tag == "Player")
             {
-                actionUI.GetComponent<Text>().text = "";
+                instantiatedActionUI.GetComponent<Text>().text = "";
                 playerIsNear = false;
             }
         }
 
         public void DrawGUI()
         {
-            actionUI.GetComponent<Text>().text = dialogueOwnerName != ""
+            instantiatedActionUI.GetComponent<Text>().text = dialogueOwnerName != ""
                 ? "E) Talk with " + dialogueOwnerName
                 : "E) Talk";
         }

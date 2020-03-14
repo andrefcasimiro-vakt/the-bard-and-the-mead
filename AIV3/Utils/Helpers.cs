@@ -34,8 +34,6 @@ namespace RPG.AIV3 {
             owner.transform.LookAt(targetPosition);
         }
 
-
-
         // COMBAT Utils
 
         public static bool TargetIsFarAway(GameObject target, GameObject own, WeaponManager weaponManager)

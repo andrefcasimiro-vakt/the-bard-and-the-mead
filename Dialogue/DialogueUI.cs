@@ -9,7 +9,7 @@ namespace RPG.Dialogue
     public class DialogueUI : MonoBehaviour
     {
 
-        public ConversationTree conversationTree;
+        [HideInInspector] public ConversationTree conversationTree;
         public string dialogueOwnerName;
 
         public GameObject dialogueOwner;
@@ -18,8 +18,6 @@ namespace RPG.Dialogue
         public GameObject choiceButtonPrefab;
 
         public GameObject arrow;
-
-        public GameObject cutsceneCamera;
 
         bool repaint = false;
 

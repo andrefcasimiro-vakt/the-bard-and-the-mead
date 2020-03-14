@@ -51,7 +51,7 @@ namespace RPG.AIV3 {
         // Private         
         [HideInInspector] public Health health => GetComponent<Health>();
         [HideInInspector] public Stamina stamina => GetComponent<Stamina>();
-        NavMeshAgent navMeshAgent => GetComponent<NavMeshAgent>();
+        [HideInInspector] public NavMeshAgent navMeshAgent => GetComponent<NavMeshAgent>();
         [HideInInspector] public Battler battler => GetComponent<Battler>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
@@ -60,11 +60,13 @@ namespace RPG.AIV3 {
         // Behaviours
         Fight fight;
         Flee flee;
+        Talk talk;
 
         void Start() {
             // Create behaviours
             fight = new Fight(this);
             flee = new Flee(this);
+            talk = new Talk(this);
         }
 
         void Update() {
@@ -85,6 +87,13 @@ namespace RPG.AIV3 {
         }
 
         void HandleFSM() {
+            if (state == AGENT_STATE.TALKING) {
+                GetComponent<Animator>().SetFloat("InputVertical", 0);   
+                navMeshAgent.isStopped = true;
+            } else {
+                HandleMovement();
+                HandleVision();
+            }
 
             switch (state)
             {
@@ -100,14 +109,13 @@ namespace RPG.AIV3 {
                 case AGENT_STATE.FLEE:
                     flee.Dispatch();
                     break;
+                case AGENT_STATE.TALKING:
+                    talk.Dispatch();
+                    break;
                 case AGENT_STATE.DEAD:
                 default:
                     return;
             }
-
-            HandleMovement();
-
-            HandleVision();
 
             // GetComponent<Animator>().SetBool("IsStrafing", inProgress);
         }
@@ -132,6 +140,7 @@ namespace RPG.AIV3 {
                 return;
             }
 
+            // Consider only casting the vision on patrol
             bool castVision = !(
                 state == AGENT_STATE.FIGHTING
                 || state == AGENT_STATE.FLEE
@@ -440,13 +449,14 @@ namespace RPG.AIV3 {
         CHASE,
         FLEE,
         FIGHTING,
+        TALKING,
         DEAD,
     }
 
     public enum ALLIANCE {
-        PLAYER,
-        NEUTRAL,
-        ENEMY
+        PLAYER, // Friends to player
+        NEUTRAL, // Friends to everyone or no one
+        ENEMY // Enemy of player
     }
 
 }
