@@ -13,6 +13,16 @@ public class LocalSwitch : MonoBehaviour, ISaveable
         this.ON = true;
     }
 
+    public void SetLocalSwitchOn()
+    {
+        this.ON = true;
+    }
+
+    public void SetLocalSwitchOff()
+    {
+        this.ON = false;
+    }
+
     public bool GetLocalSwitch()
     {
         return ON;

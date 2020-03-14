@@ -2,6 +2,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.Stats;
 using RPG.AI;
+using RPG.AIV3;
+using RPG.Combat;
 using RPG.Saving;
 
 namespace RPG.Core {
@@ -67,6 +69,11 @@ namespace RPG.Core {
 
             if (currentHealthPoints <= 0f)
             {
+                // Reward target with experience points
+                GetComponent<AI_Core_V3>().target.GetComponent<BaseStats>().IncreaseExperience(
+                    GetComponent<Battler>().GetRewardExperience()
+                );
+
                 Die();
             }
         }
@@ -94,10 +101,10 @@ namespace RPG.Core {
         public bool IsLowHealth()
         {
             // maxhealth is 100
-            // low health is 20%
-            // Formula is 20 x maxhealth / 100
+            // low health is 30%
+            // Formula is 30 x maxhealth / 100
 
-            return currentHealthPoints <= (20 * maxHealthPoints) / 100;
+            return currentHealthPoints <= (30 * maxHealthPoints) / 100;
         }
 
         public object CaptureState()

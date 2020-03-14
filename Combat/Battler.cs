@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using RPG.Weapon;
 using RPG.Core;
+using RPG.Stats;
 
 namespace RPG.Combat {
 
@@ -20,6 +21,9 @@ namespace RPG.Combat {
 
         [Header("Dodge")]
         [SerializeField] float dodgeStaminaCost = 10f;
+
+        [Header("Rewards")]
+        public int baseExpForKilling = 100;
 
         // Constants
         const int COMBAT_LAYER_INDEX = 1;
@@ -52,14 +56,12 @@ namespace RPG.Combat {
             weaponManager.Attack(gruntAudioClip);
 
             // Stop movement when attacking
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
 
             yield return new WaitUntil(() => IsAttacking());
             
             yield return new WaitUntil(() => !IsAttacking());
 
             // Restore movement
-            GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
         }
 
         IEnumerator ExecuteDefense()
@@ -100,6 +102,11 @@ namespace RPG.Combat {
         public bool IsTakingDamage()
         {
             return GetComponent<Animator>().GetCurrentAnimatorStateInfo(COMBAT_LAYER_INDEX).IsTag("TakeDamage");
+        }
+
+        public int GetRewardExperience()
+        {
+            return baseExpForKilling * GetComponent<BaseStats>().currentLevel;
         }
     }
 }

@@ -36,8 +36,6 @@ namespace RPG.EventSystem {
 
         private void Start()
         {
-            
-
             if (processType == ProcessType.AUTOMATIC)
             {
                 Initialize();

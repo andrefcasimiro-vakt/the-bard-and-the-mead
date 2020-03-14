@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.AI;
 using RPG.Core;
 using RPG.Combat;
@@ -13,10 +14,14 @@ namespace RPG.AIV3 {
 
     public class AI_Core_V3 : MonoBehaviour {
 
+        [Header("Alliance")]
+        public ALLIANCE alliance = ALLIANCE.PLAYER;
+
         [Header("Vision Settings")]
         [SerializeField] float fieldOfView = 110f;
         [SerializeField] float minimumDistanceToCastVision = 10f;
         [SerializeField] Vector3 targetLastKnownPosition;
+        [SerializeField] UnityEvent OnTargetSpotted;
 
         [Header("Patrol Settings")]
         [Range(0f, 10f)] [SerializeField] float maxSpeed = 3f;
@@ -34,22 +39,32 @@ namespace RPG.AIV3 {
         [SerializeField] float stoppingDistanceToPlayer = 1f;
         [SerializeField] float staminaChasingCost = 3f;
 
+        [Header("Flee Settings")]
+        public float safeDistanceFromTarget = 15f;
+
         [Header("Target")]
         public string[] candidateTags;
-        [SerializeField] GameObject target;
+        [HideInInspector] public GameObject target;
 
         [SerializeField] AGENT_STATE state = AGENT_STATE.PATROL;
 
         // Private         
-        Health health => GetComponent<Health>();
-        Stamina stamina => GetComponent<Stamina>();
+        [HideInInspector] public Health health => GetComponent<Health>();
+        [HideInInspector] public Stamina stamina => GetComponent<Stamina>();
         NavMeshAgent navMeshAgent => GetComponent<NavMeshAgent>();
-        Battler battler => GetComponent<Battler>();
+        [HideInInspector] public Battler battler => GetComponent<Battler>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
-        bool inProgress = false;
+        public bool inProgress = false;
         
+        // Behaviours
+        Fight fight;
+        Flee flee;
+
         void Start() {
+            // Create behaviours
+            fight = new Fight(this);
+            flee = new Flee(this);
         }
 
         void Update() {
@@ -80,7 +95,10 @@ namespace RPG.AIV3 {
                     Chase();
                     break;
                 case AGENT_STATE.FIGHTING:
-                    Fight();
+                    fight.Dispatch();
+                    break;
+                case AGENT_STATE.FLEE:
+                    flee.Dispatch();
                     break;
                 case AGENT_STATE.DEAD:
                 default:
@@ -91,7 +109,7 @@ namespace RPG.AIV3 {
 
             HandleVision();
 
-            GetComponent<Animator>().SetBool("IsStrafing", inProgress);
+            // GetComponent<Animator>().SetBool("IsStrafing", inProgress);
         }
 
 
@@ -116,7 +134,8 @@ namespace RPG.AIV3 {
 
             bool castVision = !(
                 state == AGENT_STATE.FIGHTING
-            );
+                || state == AGENT_STATE.FLEE
+            ) && (alliance == ALLIANCE.ENEMY);
 
             if (castVision == false)
             {
@@ -124,32 +143,45 @@ namespace RPG.AIV3 {
             }
 
 
+            RaycastHit hit;
+            Vector3 ownHeight = GetComponent<Collider>().bounds.center;
+
             Vector3 direction = target != null
                 ? target.transform.position - transform.position
-                : transform.forward * minimumDistanceToCastVision - transform.position;
+                : transform.forward;
 
             float angle = Vector3.Angle(direction, transform.forward);
-            if (angle < fieldOfView * 0.5f)
-            {
-                RaycastHit hit;
 
-                Vector3 ownHeight = GetComponent<Collider>().bounds.center;
+            if (
+                target != null
+                    ? angle < fieldOfView * 0.5f
+                    : true
+            )
+            {
 
                 if (Physics.Raycast(ownHeight, direction.normalized, out hit, minimumDistanceToCastVision))
                 {
                     if (candidateTags.Contains(hit.collider.gameObject.tag))
                     {
-                        target = hit.collider.gameObject;
-
-                        // Record last known position of player
-                        targetLastKnownPosition = hit.collider.gameObject.transform.position;
-
-                        // Chase Target
-                        state = AGENT_STATE.CHASE;
+                        OnTargetDetection(hit.collider.gameObject);
                     }
                 }
             }
+        }
+        public void OnTargetDetection(GameObject spottedTarget)
+        {
+            target = spottedTarget;
 
+            // Record last known position of player
+            targetLastKnownPosition = spottedTarget.transform.position;
+
+            if (state != AGENT_STATE.CHASE)
+            {
+                // Chase Target
+                state = AGENT_STATE.CHASE;
+
+                OnTargetSpotted.Invoke();
+            }
         }
 
         // Behaviours
@@ -170,14 +202,20 @@ namespace RPG.AIV3 {
             }
 
             if (timeSinceArrivedAtWaypoint > waypointDwellTime) {
-                MoveTo(nextPosition);
+                // MoveTo(nextPosition);
+                AI_Helpers.MoveTo(
+                    nextPosition,
+                    maxSpeed,
+                    patrolSpeedFraction,
+                    navMeshAgent
+                );
             }
 
             return;
         }
 
         // PATROL (Utils)
-        void MoveTo(Vector3 destination)
+        public void MoveTo(Vector3 destination)
         {
             navMeshAgent.speed = maxSpeed * Mathf.Clamp01(patrolSpeedFraction);
             navMeshAgent.destination = destination;
@@ -225,7 +263,10 @@ namespace RPG.AIV3 {
             // Has Stamina To Continue chase?
             if (stamina.HasStaminaAgainstCostAction(staminaChasingCost))
             {
-                MoveTo(destination);
+                // MoveTo(destination);
+
+                AI_Helpers.MoveTo(destination, maxSpeed, patrolSpeedFraction, navMeshAgent);
+
                 stamina.DecreaseStamina(staminaChasingCost);
             }
             else
@@ -242,19 +283,22 @@ namespace RPG.AIV3 {
             bool facePlayer = state == AGENT_STATE.CHASE || state == AGENT_STATE.FIGHTING;
 
             if (facePlayer) {
-                FacePlayer();
+                AI_Helpers.FaceTarget(
+                    target,
+                    this.gameObject
+                );
             }
         }
 
-        void FacePlayer()
+        /*void FacePlayer()
         {
             Vector3 targetPosition = new Vector3(target.transform.position.x,
                                                    this.transform.position.y,
                                                    target.transform.position.z);
             this.transform.LookAt(targetPosition);
-        }
+        }*/
 
-        void Fight()
+        /*void Fight()
         {
             if (inProgress) {
                 return;
@@ -274,10 +318,6 @@ namespace RPG.AIV3 {
                 state = AGENT_STATE.CHASE;
                 return;
             }
-
-            // If got hit
-            //                 transform.Translate(Vector3.back);
-
 
             if (TargetIsAttacking() == true) {
                 if (UnityEngine.Random.Range(0f, 1f) > 0.5f)
@@ -342,8 +382,7 @@ namespace RPG.AIV3 {
         {
             return target.GetComponent<Battler>().IsDefending();
         }
-
-
+    */
 
         // PUBLIC
         public void SetState (AGENT_STATE state) {
@@ -356,6 +395,9 @@ namespace RPG.AIV3 {
 
         public void TakeDamage(GameObject target) {
             this.target = target;
+
+            transform.Translate(Vector3.back);
+
             state = AGENT_STATE.CHASE;
         }
 
@@ -396,8 +438,15 @@ namespace RPG.AIV3 {
     public enum AGENT_STATE {
         PATROL,
         CHASE,
+        FLEE,
         FIGHTING,
         DEAD,
+    }
+
+    public enum ALLIANCE {
+        PLAYER,
+        NEUTRAL,
+        ENEMY
     }
 
 }

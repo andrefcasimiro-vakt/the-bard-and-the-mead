@@ -20,6 +20,14 @@ namespace RPG.EventSystem
         [Header("Settings")]
         public float fadeSpeed = 0.5f;
 
+        void Start() {
+            if (audioSource == null)
+            {
+                // Attempt to find a gameobject with tag BGM_Manager
+                audioSource = GameObject.FindWithTag("BGM_Manager").GetComponent<AudioSource>();
+            }
+        }
+
         public override IEnumerator Dispatch() {
 
             if (fadeIn) {

@@ -160,6 +160,12 @@ namespace RPG.Weapon {
 
         void HitTarget()
         {
+            // Don't hit npcs or player friends
+            if (hitbox.target.GetComponent<AI_Core_V3>().alliance != ALLIANCE.ENEMY)
+            {
+                return;
+            }
+
             // Apply damage to hitbox current target
             hitbox.target.GetComponent<Health>().TakeDamage(currentWeapon.weaponDamage);
 

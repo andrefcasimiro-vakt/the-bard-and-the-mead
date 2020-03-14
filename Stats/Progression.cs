@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Linq;
 
 namespace RPG.Stats {
         
@@ -22,6 +23,8 @@ namespace RPG.Stats {
             public float initialAgilityPoints;
             public float levelMultiplier;
 
+            public int baseExperiencePoints = 100; 
+            public float experienceModifier = .33f;
         }
 
         // =====================================> [ RACE ] <================================
@@ -178,6 +181,22 @@ namespace RPG.Stats {
 
             // Finally, return constructed health points
             return agilityPoints;
+        }
+
+
+
+        public int GetRequiredExperienceForLevel (
+            int currentLevel,
+            CharacterClassEnum characterClass
+        )
+        {   
+            CharacterStat charStat = characterStats.First(x => x.characterClass == characterClass);
+            int baseExpPoints = charStat.baseExperiencePoints;
+            float modif = baseExpPoints * charStat.experienceModifier;
+
+            return (int) Mathf.Round(
+                (currentLevel * baseExpPoints) * (modif)
+            );
         }
 
     }
