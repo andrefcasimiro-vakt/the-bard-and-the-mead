@@ -131,6 +131,12 @@ namespace RPG.AIV3 {
             Vector3 localVelocity = transform.InverseTransformDirection(velocity);
 
             float speed = localVelocity.z;
+
+            if (state == AGENT_STATE.PATROL)
+            {
+                speed = speed >= 0.5f ? 0.5f : speed;
+            }
+
             GetComponent<Animator>().SetFloat("InputVertical", speed);   
         }
 

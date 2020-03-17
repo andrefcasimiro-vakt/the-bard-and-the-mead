@@ -8,7 +8,6 @@ namespace RPG.Quest {
     public class QuestObjective
     {
         public int questObjectiveId;
-        public int questId;
         public string questObjectiveDescription;
         public bool isDone = false;
 
@@ -20,7 +19,6 @@ namespace RPG.Quest {
         )
         {
             this.questObjectiveId = questObjectiveId;
-            this.questId = questId;
             this.questObjectiveDescription = questObjectiveDescription;
             this.isDone = isDone;
         }

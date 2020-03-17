@@ -89,6 +89,10 @@ namespace RPG.Inventory
                     leftLeg = null;
                     leftLeg = new Slot(equipment);
                     break;
+                case BodyPart.RightHandWeapon:
+                    rightWeapon = null;
+                    rightWeapon = new Slot(equipment);
+                    break;
                 default:
                     break;
             }
@@ -120,6 +124,8 @@ namespace RPG.Inventory
                     return rightLeg;
                 case BodyPart.LeftLeg:
                     return leftLeg;
+                case BodyPart.RightHandWeapon:
+                    return rightWeapon;
                 default:
                     return null;
             }

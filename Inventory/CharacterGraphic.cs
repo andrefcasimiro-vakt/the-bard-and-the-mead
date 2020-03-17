@@ -19,7 +19,8 @@ namespace RPG.Character {
         RightLeg,
         Hair,
         Eyebrows,
-        Beard
+        Beard,
+        RightHandWeapon
     }
 
     [System.Serializable]
@@ -119,7 +120,7 @@ namespace RPG.Character {
             foreach (Transform t in GetComponentsInChildren<Transform>(true))
             {
                 foreach (CharacterBody c in characterBody)
-                {
+                {   
                     if (c.prefix == t.gameObject.name)
                     {
                         c.SetGameObject(t.gameObject);
@@ -131,7 +132,11 @@ namespace RPG.Character {
 
         public void TogglePart(BodyPart bodyPart, bool value)
         {
-            characterBody.Find(c => c.id == bodyPart).gameObject.SetActive(value);
+            CharacterBody _c = characterBody.Find(c => c.id == bodyPart);
+
+            if (_c != null) {
+                _c.gameObject.SetActive(value);
+            }
         }
 
     }

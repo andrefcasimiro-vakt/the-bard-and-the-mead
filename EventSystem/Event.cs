@@ -10,6 +10,7 @@ namespace RPG.EventSystem {
             EVENT,
             AUTOMATIC,
             PARALLEL,
+            ON_TRIGGER_ENTER,
         }
 
         [Header("Event Processing Options")]
@@ -52,6 +53,14 @@ namespace RPG.EventSystem {
             }
         }
 
+        public void OnTriggerEnter(Collider col)
+        {
+            if (processType == ProcessType.ON_TRIGGER_ENTER && col.gameObject.tag == "Player")
+            {
+                Initialize();
+            }
+        }
+
         public void Initialize()
         {
             if (localSwitch && localSwitch.GetLocalSwitch() == true)
@@ -62,7 +71,6 @@ namespace RPG.EventSystem {
 
             isRunning = true;
             StartCoroutine(DispatchEvents());
-
         }
 
         IEnumerator DispatchEvents()
@@ -74,5 +82,6 @@ namespace RPG.EventSystem {
 
             isRunning = false;
         }
+        
     }
 }

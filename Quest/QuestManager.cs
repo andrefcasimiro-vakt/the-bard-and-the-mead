@@ -22,6 +22,8 @@ namespace RPG.Quest {
         public GameObject QuestTitle;
         public GameObject QuestLocation;
         public GameObject QuestDescription;
+        public GameObject QuestObjectivesPanel;
+
         public GameObject QuestObjectivePrefab;
 
         [Header("Quest Keyboard Settings")]
@@ -137,6 +139,32 @@ namespace RPG.Quest {
             QuestTitle.GetComponent<Text>().text = selectedQuest.questTitle;
             QuestLocation.GetComponent<Text>().text = selectedQuest.questLocation;
             QuestDescription.GetComponent<Text>().text = selectedQuest.questDescription;
+
+            // Clean quest list panel first
+            foreach (Transform child in QuestObjectivesPanel.transform)
+            {
+                Destroy(child.gameObject);
+            }
+
+            foreach (QuestObjective questObjective in selectedQuest.objectives)
+            {
+                GameObject questObjGO = Instantiate(QuestObjectivePrefab, QuestObjectivesPanel.transform);
+                Text questObjectiveText = questObjGO.transform.GetChild(0).GetComponent<Text>();
+
+                if (questObjectiveText == null)
+                {
+                    Debug.LogError("Could not find quest objective text in child of quest objective button instance");
+                    return;
+                }
+
+                questObjectiveText.text = questObjective.questObjectiveDescription;
+
+                if (questObjective.isDone)
+                {
+                    questObjectiveText.color = Color.green;
+                }
+            }
+
         }
 
         void SetActiveQuest (ScriptableQuest quest)

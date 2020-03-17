@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using RPG.Character;
 using RPG.Stats;
+using RPG.Weapon;
 
 namespace RPG.Inventory
 {
@@ -17,12 +18,34 @@ namespace RPG.Inventory
 
         public BodyPart bodyPart;
 
+        RuntimeAnimatorController defaultAnimatorOverrideController;
+
+        GameObject instance;
+
         public void Equip(GameObject target)
         {
             GameObject equipmentGraphic = null;
             BaseStats baseStats = target.GetComponent<BaseStats>();
             bool isMale = baseStats.IsMale();
             string graphicName = isMale ? maleGraphicGameObjectName : femaleGraphicGameObjectName;
+
+            if (this.itemType == ItemEnum.WEAPON) {
+
+                defaultAnimatorOverrideController = target.GetComponent<Animator>().runtimeAnimatorController;
+                    
+                Debug.Log("got here on item type check validation for weapons");
+                target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, this);
+                target.GetComponent<WeaponManager>().weaponSlots[0].EquipWeapon(this as ScriptableWeapon);
+
+                // Instantiate weapon graphic here
+                // Hardcode for right hand for now
+                // instance = Instantiate(this.weaponPrefab, target.GetComponent<WeaponManager>().weaponSlots[0].gameObject.transform);
+
+                target.GetComponent<Animator>().runtimeAnimatorController = this.animatorOverrideController as RuntimeAnimatorController;
+
+                return;
+            }
+
 
             foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
             {
@@ -31,6 +54,11 @@ namespace RPG.Inventory
                     equipmentGraphic = t.gameObject;
                     break;
                 }
+            }
+
+            if (equipmentGraphic == null)
+            {
+                return;
             }
 
             equipmentGraphic.SetActive(true);
@@ -47,6 +75,18 @@ namespace RPG.Inventory
             BaseStats baseStats = target.GetComponent<BaseStats>();
             bool isMale = baseStats.IsMale();
             string graphicName = isMale ? maleGraphicGameObjectName : femaleGraphicGameObjectName;
+
+            if (this.itemType == ItemEnum.WEAPON) {
+                Debug.Log("got here on item type check validation for weapons");
+                target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, null);
+                target.GetComponent<Animator>().runtimeAnimatorController = defaultAnimatorOverrideController as RuntimeAnimatorController;
+
+                target.GetComponent<WeaponManager>().weaponSlots[0].UnequipWeapon();
+
+                Destroy(instance);
+                return;
+            }
+
 
             foreach (Transform t in target.GetComponentsInChildren<Transform>(true))
             {

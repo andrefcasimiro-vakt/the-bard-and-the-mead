@@ -22,11 +22,15 @@ namespace RPG.Dialogue
         bool repaint = false;
 
         GameObject player;
+    
+        void Awake()
+        {
+            player = GameObject.FindWithTag("Player");
+        }
 
         private void Start()
         {
             Toggle(false);
-            player = GameObject.FindWithTag("Player");
         }
 
         void Toggle(bool v)
@@ -40,6 +44,8 @@ namespace RPG.Dialogue
 
         public void SetConversation(ConversationTree conversationTree)
         {
+            if (player == null) player = GameObject.FindWithTag("Player");
+
             player.SetActive(false);
             this.conversationTree = conversationTree;
             this.conversationTree.dialogueCamera.SetActive(true);
@@ -113,8 +119,8 @@ namespace RPG.Dialogue
             string eventId = conversationTree.GetEventId();
             if (eventId != null)
             {
-                E_Event ev = null;
-                foreach (E_Event e in conversationTree.events)
+                DialogueEvent ev = null;
+                foreach (DialogueEvent e in conversationTree.events)
                 {
                     if (e.eventId == eventId)
                     {
@@ -124,7 +130,7 @@ namespace RPG.Dialogue
 
                 if (ev != null)
                 {
-                    ev.Dispatch();
+                    ev.OnEvent.Invoke();
 
                     // No choices possible in a event trigger node, so we advance the conversation.
                     AdvanceOnClick();

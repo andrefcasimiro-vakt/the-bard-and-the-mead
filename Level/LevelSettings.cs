@@ -25,10 +25,15 @@ namespace RPG.Level {
         // Start is called before the first frame update
         void Start()
         {
-
             mainCamera = GameObject.FindWithTag("MainCamera");
-            mainCamera.GetComponent<vThirdPersonCamera>().defaultDistance = cameraProximity;
+        }
 
+        void Update()
+        {
+            if (mainCamera != null)
+            {
+                mainCamera.GetComponent<vThirdPersonCamera>().defaultDistance = cameraProximity;
+            }
         }
 
 

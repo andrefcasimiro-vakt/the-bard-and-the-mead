@@ -43,6 +43,7 @@ namespace RPG.Inventory
         }
 
         public ScriptableItem FindByItemName(string itemName) {
+            Debug.Log("item name: " + itemName);
             return inventory.Find(x => x.itemName == itemName);
         }
 

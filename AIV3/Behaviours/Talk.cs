@@ -23,8 +23,12 @@ namespace RPG.AIV3 {
 
         public override void Dispatch()
         {
-            // Hardcode for player for now
-            context.transform.LookAt(GameObject.FindWithTag("Player").gameObject.transform);
+            // GameObject player = GameObject.FindWithTag("Player");
+
+            /*if (player != null) {
+                // Hardcode for player for now. Remember that we deactivate the player when in dialogue!! :/
+                context.transform.LookAt(player.gameObject.transform);
+            }*/
 
             context.navMeshAgent.isStopped = true;
             context.GetComponent<Animator>().SetFloat("InputVertical", 0f);

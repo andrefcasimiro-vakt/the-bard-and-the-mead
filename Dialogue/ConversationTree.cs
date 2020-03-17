@@ -1,15 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-
-using RPG.Dialogue;
-
-using UnityEngine.UIElements;
 using RPG.Dialogue.Core;
-using System;
 using System.Linq;
-using System.Collections.Generic;
-using UnityEngine.UI;
 using RPG.Events;
 
 namespace RPG.Dialogue
@@ -18,7 +10,7 @@ namespace RPG.Dialogue
     public class ConversationTree
     {
 
-        public const string EVENT_PREFIX = "EV_";
+        public const string EVENT_PREFIX = "$";
 
         /// <summary>
         /// The conversation node data
@@ -38,7 +30,7 @@ namespace RPG.Dialogue
         /// <summary>
         /// The list of events to dispatch across the conversation
         /// </summary>
-        public List<E_Event> events = new List<E_Event>();
+        public List<DialogueEvent> events = new List<DialogueEvent>();
 
         /// <summary>
         /// The current index of the conversation
@@ -49,7 +41,7 @@ namespace RPG.Dialogue
             DialogueContainer dialogueContainer,
             string dialogueOwnerName,
             GameObject dialogueCamera,
-            List<E_Event> events
+            List<DialogueEvent> events
         )
         {
             this.dialogueContainer = dialogueContainer;

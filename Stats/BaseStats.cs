@@ -96,7 +96,7 @@ namespace RPG.Stats {
         {
             currentExperience += amount;
 
-            GameObject expPopup = GameObject.FindWithTag("EXP_Popup");
+            GameObject expPopup = GameObject.FindWithTag("Popup");
 
             if (currentExperience >= GetRequiredExpToNextLevel())
             {
@@ -107,7 +107,7 @@ namespace RPG.Stats {
                 expPopup.transform.GetChild(0).gameObject.GetComponent<Text>().text = "+ " + amount + " Exp";
             }
 
-            expPopup.GetComponent<Animator>().SetTrigger("Show");
+            expPopup.GetComponent<Animator>().Play("Show");
         }
 
         public int GetRequiredExpToNextLevel()

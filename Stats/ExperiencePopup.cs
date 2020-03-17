@@ -14,16 +14,7 @@ public class ExperiencePopup : StateMachineBehaviour
     override public void OnStateEnter(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
     {
 
-        if (stateInfo.IsName("Start Exp Popup"))
-        {
-            animator.transform.GetChild(0).gameObject.SetActive(true);
-        }
 
-        if (stateInfo.IsName("Idle"))
-        {
-            animator.transform.GetChild(0).gameObject.SetActive(false);
-            animator.ResetTrigger("Show");
-        }
     }
 
     // OnStateUpdate is called on each Update frame between OnStateEnter and OnStateExit callbacks

@@ -46,6 +46,8 @@ namespace RPG.Inventory
         public GameObject leftLegSlotBTN;
         public GameObject rightLegSlotBTN;
 
+        public GameObject weaponSlotBTN;
+
         private void Start()
         {
             player = GameObject.FindWithTag("Player");
@@ -164,9 +166,15 @@ namespace RPG.Inventory
                     });
                 }
 
-                if (item.itemType == ItemEnum.EQUIPMENT)
+                if (item.itemType == ItemEnum.EQUIPMENT || item.itemType == ItemEnum.WEAPON)
                 {
-                    ScriptableEquipment equipment = (ScriptableEquipment)item;
+                    var equipment = new ScriptableEquipment();
+
+                    if (item.itemType == ItemEnum.EQUIPMENT)
+                        equipment = (ScriptableEquipment)item;
+
+                    if (item.itemType == ItemEnum.WEAPON)
+                        equipment = (ScriptableWeapon)item;
                     
 
                     bool itemIsEquipped = currentCharacterEquipmentSlot.GetSlot(equipment.bodyPart)?.equipment == equipment;
@@ -248,6 +256,8 @@ namespace RPG.Inventory
                     return rightLegSlotBTN;
                 case BodyPart.LeftLeg:
                     return leftLegSlotBTN;
+                case BodyPart.RightHandWeapon:
+                    return weaponSlotBTN;
                 default:
                     return null;
             }

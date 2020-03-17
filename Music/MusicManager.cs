@@ -8,6 +8,7 @@ namespace RPG.Music {
     public enum MUSIC_STATE {
         FIELD,
         BATTLE,
+        NONE,
     }
 
     [RequireComponent(typeof(AudioSource))]
@@ -23,7 +24,8 @@ namespace RPG.Music {
         AudioClip currentBGM;
 
         void Start() {
-            PlayMusic();
+            if (state != MUSIC_STATE.NONE)
+                PlayMusic();
         }
 
         public void PlayMusic()
@@ -38,6 +40,7 @@ namespace RPG.Music {
                     SetCurrentBGM(fieldMusic);
                     Play();
                 break;
+                case MUSIC_STATE.NONE:
                 default:
                     break;
             }
@@ -81,7 +84,8 @@ namespace RPG.Music {
 
         public void Stop()
         {
-            audioSource.Pause();
+            state = MUSIC_STATE.NONE;
+            audioSource.Stop();
         }
 
     }

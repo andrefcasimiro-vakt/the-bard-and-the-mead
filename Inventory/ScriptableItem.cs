@@ -35,6 +35,12 @@ namespace RPG.Inventory
         [Header("World")]
         public GameObject droppedInstance;
 
+        [Header("Animations")]
+        public AnimatorOverrideController animatorOverrideController;
+
+        [Header("Prefab")]
+        public GameObject weaponPrefab;
+
         [Header("Stack")]
         public bool stackable = true;
 

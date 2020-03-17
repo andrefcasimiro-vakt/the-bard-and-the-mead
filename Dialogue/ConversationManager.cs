@@ -27,21 +27,30 @@ namespace RPG.Dialogue {
         [SerializeField] string dialogueOwnerName;
         [SerializeField] GameObject defaultCutsceneCamera;
 
-        [Header("Events")]
-        [SerializeField]
-        List<E_Event> events = new List<E_Event>();
-
+        List<DialogueEvent> events = new List<DialogueEvent>();
 
         bool dialogueInProgress = false;
         bool playerIsNear = false;
+
+        void Awake()
+        {
+            foreach (MonoBehaviour script in gameObject.GetComponents<MonoBehaviour>())
+            {
+                DialogueEvent s = script as DialogueEvent;
+                if (s != null) {
+                    events.Add(s);
+                }
+            }
+        }
 
         void Start()
         {
             defaultCutsceneCamera.SetActive(false);
 
             instantiatedDialogueUi = Instantiate(dialogueUi);
-            instantiatedActionUI = Instantiate(actionUI);
-
+            
+            // instantiatedActionUI = Instantiate(actionUI).gameObject.transform.GetChild(0).gameObject;
+            instantiatedActionUI = GameObject.FindWithTag("ActionPopup");
 
             if (string.IsNullOrEmpty(dialogueOwnerName))
             {
@@ -119,16 +128,23 @@ namespace RPG.Dialogue {
         {
             if (col.gameObject.tag == "Player")
             {
-                instantiatedActionUI.GetComponent<Text>().text = "";
+                if (instantiatedActionUI != null) instantiatedActionUI.GetComponent<Text>().text = "";
                 playerIsNear = false;
             }
         }
 
+        public void OnDisable() {
+            if (instantiatedActionUI != null) instantiatedActionUI.GetComponent<Text>().text = "";
+
+        }        
+
         public void DrawGUI()
         {
-            instantiatedActionUI.GetComponent<Text>().text = dialogueOwnerName != ""
-                ? "E) Talk with " + dialogueOwnerName
-                : "E) Talk";
+            if (instantiatedActionUI != null) {
+                instantiatedActionUI.GetComponent<Text>().text = dialogueOwnerName != ""
+                    ? "E) Talk with " + dialogueOwnerName
+                    : "E) Talk";
+            }
         }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using RPG.Saving;
 
 namespace RPG.Quest { 
@@ -21,15 +22,32 @@ namespace RPG.Quest {
                 foreach(QuestObjective qObjective in currentQuest.objectives)
                 {
                     questObjectives.Add(new SaveableObjective(qObjective.questObjectiveId, qObjective.isDone));
+
                 }
-
-                print("quest id to save: " + questId);
-
+                
                 saveableQuests.Add(new SaveableQuest(questId, questObjectives));
             }
 
             return saveableQuests.ToArray();
         }
+
+
+        /// Adds a quest and notifies the player
+        public void AddQuest(ScriptableQuest quest)
+        {
+             GameObject popup = GameObject.FindWithTag("Popup");
+
+            if (popup == null)
+            {
+                return;
+            }
+
+            popup.GetComponent<Animator>().Play("Show");
+            popup.transform.GetChild(0).gameObject.GetComponent<Text>().text = "New Quest: " + quest.name;
+
+            currentQuests.Add(quest);
+        }
+
 
         public object CaptureState()
         {
@@ -56,22 +74,17 @@ namespace RPG.Quest {
 
             foreach (ScriptableQuest quest in allExistingQuests)
             {
-                print("xisting quest");
-                    print(quest.questTitle);
-
                 foreach (SaveableQuest savedQuest in savedQuests)
                 {
-                    print("Saved quest");
-                    print(savedQuest.questId);
 
                     if (quest.questId == savedQuest.questId)
                     {
-                        // We found a quest id that was saved. We need to update each quest's objective according to isDone
-                        foreach(QuestObjective questObjective in quest.objectives)
-                        {
-                            questObjective.isDone = savedQuest.questObjectives.Find(x => x.objectiveId == questObjective.questId).isDone;
-                        }
 
+                        for (int i = 0; i < quest.objectives.Count; i++)
+                        {
+                            quest.objectives[i].isDone = savedQuest.questObjectives[i].isDone;
+                        }
+                        
                         // Finally, add this match to the currentQuests list
                         currentQuests.Add(quest);
                     }

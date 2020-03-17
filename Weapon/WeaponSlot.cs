@@ -149,19 +149,20 @@ namespace RPG.Weapon {
         }
 
         void SpawnWeapon() {
-            weaponGameObject = Instantiate(currentWeapon.weaponPrefab, this.transform.position, Quaternion.identity, this.transform);
+            weaponGameObject = Instantiate(currentWeapon.weaponPrefab, this.transform);
 
             // Assign damage amount to the prefab hitbox
             hitbox = GetHitbox();
 
             // Subscribe to Hit Event available on Hitbox
+            hitbox.OnHit.RemoveAllListeners();
             hitbox.OnHit.AddListener(HitTarget);
         }
 
         void HitTarget()
         {
-            // Don't hit npcs or player friends
-            if (hitbox.target.GetComponent<AI_Core_V3>().alliance != ALLIANCE.ENEMY)
+            // If I am player, I don't want to hit npcs or player friends
+            if (weaponOwner.tag == "Player" && hitbox.target.GetComponent<AI_Core_V3>().alliance != ALLIANCE.ENEMY)
             {
                 return;
             }
@@ -200,7 +201,24 @@ namespace RPG.Weapon {
 
         Hitbox GetHitbox()
         {
-            return weaponGameObject.GetComponent<WeaponReferences>().hitbox.GetComponent<Hitbox>();
+            Hitbox _h = null;
+            
+            if (weaponGameObject.GetComponent<WeaponReferences>() != null)
+            {
+                _h = weaponGameObject.GetComponent<WeaponReferences>().hitbox.GetComponent<Hitbox>();
+            }
+
+            // TOOD: Improve this but not right now because its 01:30 am
+
+
+            // If hitbox is not on parent, search inside
+            if (_h == null)
+            {
+                _h = weaponGameObject.transform.GetChild(0).GetComponent<WeaponReferences>().hitbox.GetComponent<Hitbox>();
+            Debug.Log("went inside:" + _h);
+            }
+
+            return _h;
         }
     }
 }

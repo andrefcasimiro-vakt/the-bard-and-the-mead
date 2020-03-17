@@ -29,6 +29,11 @@ namespace RPG.EventSystem {
             letterPause = (float)(letterPause * 0.01);
         }
 
+        public void Display()
+        {
+            StartCoroutine(Dispatch());
+        }
+
         public override IEnumerator Dispatch()
         {
             yield return StartCoroutine(DisplayText());
@@ -39,8 +44,6 @@ namespace RPG.EventSystem {
             GameObject DisplayTextUIInstance = Instantiate(DisplayTextUI_Prefab);
 
             Text textComponent = DisplayTextUIInstance.GetComponentInChildren<Text>();
-
-
 
             AudioSource audioSource = this.gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
 

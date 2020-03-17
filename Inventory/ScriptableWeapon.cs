@@ -12,20 +12,15 @@ namespace RPG.Inventory {
     }
 
     [CreateAssetMenu(fileName = "Weapons", menuName = "Weapons/New Weapon", order = 0)]
-    public class ScriptableWeapon : ScriptableItem
+    public class ScriptableWeapon : ScriptableEquipment
     {
         [Header("Stats")]
         public float weaponDamage = 1f;
         public float weaponRange = 1f;
         public float staminaCost = 3f; // Stamina cost per attack
 
-        [Header("Animations")]
-        [SerializeField] AnimatorOverrideController animatorOverrideController;
         public float hitboxActivationTime = 0f;
         public float hitboxLifespan = 0.2f;
-
-        [Header("Prefab")]
-        public GameObject weaponPrefab;
 
         [Header("Audioclips")]
         public List<Soundclip> soundclips = new List<Soundclip>();

@@ -7,7 +7,6 @@ public class LocalSwitch : MonoBehaviour, ISaveable
 {
     public bool ON = false;
     
-
     public void SetLocalSwitch()
     {
         this.ON = true;
@@ -39,6 +38,5 @@ public class LocalSwitch : MonoBehaviour, ISaveable
     }
 
     public void OnCleanState() {
-        
     }
 }

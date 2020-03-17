@@ -8,10 +8,10 @@ namespace RPG.Events
 {
 
     [System.Serializable]
-    public class E_Event : MonoBehaviour
+    public class DialogueEvent : MonoBehaviour
     {
         public string eventId = "01";
+        public UnityEvent OnEvent;
 
-        public virtual void Dispatch() { }
     }
 }
