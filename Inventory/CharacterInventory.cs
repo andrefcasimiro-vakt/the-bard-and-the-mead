@@ -34,6 +34,13 @@ namespace RPG.Inventory
 
         public void Remove(ScriptableItem itemToRemove)
         {
+            ScriptableEquipment s = itemToRemove as ScriptableEquipment;
+            if (s != null)
+            {
+                // If is a weapon or armour, before destroying, attempt to unequip
+                s.Unequip(this.gameObject);
+            }
+
             int index = inventory.FindLastIndex(i => i == itemToRemove);
             inventory.RemoveAt(index);
         }

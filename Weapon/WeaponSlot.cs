@@ -101,6 +101,7 @@ namespace RPG.Weapon {
         // PUBLIC METHODS
         public void Attack(AudioClip gruntAudioClip)
         {
+
             // Owner of weapon has enough stamina to perform next attack?
             Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
 

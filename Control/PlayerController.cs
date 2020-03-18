@@ -28,7 +28,8 @@ namespace RPG.Control {
         {
             timer += Time.deltaTime;
 
-            CombatInput();
+            // Only allow combat if time scale is bigger than zero
+            if (Time.timeScale > 0) CombatInput();
         }
 
         private void LateUpdate()
@@ -45,6 +46,7 @@ namespace RPG.Control {
 
             if (Input.GetButtonDown(attackInput))
             {
+                Debug.Log("attacking");
                 battler.Attack();
                 timer = 0f;
 

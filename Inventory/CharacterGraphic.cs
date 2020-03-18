@@ -20,6 +20,11 @@ namespace RPG.Character {
         Hair,
         Eyebrows,
         Beard,
+        // NEW:
+        LeftShoulder,
+        RightShoulder,
+        Shield,
+        Accessory,
         RightHandWeapon
     }
 

@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using RPG.Control;
 using RPG.Character;
+using RPG.UI;
 
 namespace RPG.Inventory
 {
@@ -33,6 +34,7 @@ namespace RPG.Inventory
         GameObject inventoryOwner;
         List<ScriptableItem> inventory;
 
+        [Header("Equipment Panel UI")]
         // Equipment Slots
         public GameObject headSlotBTN;
         public GameObject torsoSlotBTN;
@@ -45,7 +47,11 @@ namespace RPG.Inventory
         public GameObject hipsSlotBTN;
         public GameObject leftLegSlotBTN;
         public GameObject rightLegSlotBTN;
-
+        
+        public GameObject leftShoulderBTN;
+        public GameObject rightShoulderBTN;
+        public GameObject accessoryBTN;
+        public GameObject shieldBTN;
         public GameObject weaponSlotBTN;
 
         private void Start()
@@ -82,7 +88,6 @@ namespace RPG.Inventory
                 Time.timeScale = 0f;
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
-
             }
             else
             {
@@ -103,12 +108,12 @@ namespace RPG.Inventory
             Draw();
         }
 
-        void Draw()
+        public void Draw()
         {
             // Clean panel first
             foreach (Transform child in slotPanel.transform)
             {
-                Destroy(child.gameObject);
+                 Destroy(child.gameObject);
             }
 
             // Store reference for performance
@@ -179,10 +184,15 @@ namespace RPG.Inventory
 
                     bool itemIsEquipped = currentCharacterEquipmentSlot.GetSlot(equipment.bodyPart)?.equipment == equipment;
 
-                    // Update equipment panel
-                    GetSlotButton(equipment.bodyPart).GetComponent<Image>().sprite = itemIsEquipped ? equipment.itemSprite : null;
+                    // Look for sprite gameobject to update its sprite
+                    GetSlotButton(equipment.bodyPart).transform.GetChild(2).GetComponent<Image>().sprite = itemIsEquipped ? equipment.itemSprite : null;
 
                     FindNestedGameObjectByTag(itemButton, UI_INVENTORY_EQUIPPED).GetComponent<Image>().enabled = itemIsEquipped;
+
+                    // Add item data to draggable slot
+                    itemBtn.GetComponent<ItemData>().itemOwner = this.inventoryOwner;
+                    itemBtn.GetComponent<ItemData>().inventoryUI = this.gameObject;
+                    itemBtn.GetComponent<ItemData>().equippedItem = equipment;
 
                     itemBtn.onClick.AddListener(() =>
                     {
@@ -193,6 +203,7 @@ namespace RPG.Inventory
                         // Item is already equipped?
                         if (slot?.equipment == equipment)
                         {
+                            Debug.Log("unequipping: " + equipment.name);
                             equipment.Unequip(inventoryOwner);
                             Draw();
                             return;
@@ -256,8 +267,16 @@ namespace RPG.Inventory
                     return rightLegSlotBTN;
                 case BodyPart.LeftLeg:
                     return leftLegSlotBTN;
+                case BodyPart.LeftShoulder:
+                    return leftShoulderBTN;
+                case BodyPart.RightShoulder:
+                    return rightShoulderBTN;
+                case BodyPart.Shield:
+                    return weaponSlotBTN;
                 case BodyPart.RightHandWeapon:
                     return weaponSlotBTN;
+                case BodyPart.Accessory:
+                    return accessoryBTN;
                 default:
                     return null;
             }
