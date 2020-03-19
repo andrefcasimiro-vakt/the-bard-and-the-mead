@@ -8,6 +8,7 @@ using UnityEngine.UI;
 namespace RPG.UI {
     public class Droppable : MonoBehaviour, IDropHandler {
 
+        // In the future change to enum because we can have 2 cases: remove item or swap places
         public bool removeItem = true;
 
         public void OnDrop(PointerEventData ped) 

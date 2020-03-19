@@ -35,6 +35,7 @@ namespace RPG.Inventory
         List<ScriptableItem> inventory;
 
         [Header("Equipment Panel UI")]
+        public GameObject equipmentPanel;
         // Equipment Slots
         public GameObject headSlotBTN;
         public GameObject torsoSlotBTN;
@@ -114,6 +115,20 @@ namespace RPG.Inventory
             foreach (Transform child in slotPanel.transform)
             {
                  Destroy(child.gameObject);
+            }
+            
+            // Get all the equipment slots in the equipment panel and remove all sprites initially 
+            // Since we can't have any equipped slot sprites in the beginning of the draw
+            foreach(Transform equipSlot in equipmentPanel.transform)
+            {
+                Transform go = equipSlot.gameObject.transform;
+
+                if (go.childCount <= 0) continue;
+
+                Image img = go.GetChild(2).gameObject.GetComponent<Image>();
+                if (img) {
+                    img.sprite = null;
+                }
             }
 
             // Store reference for performance
@@ -203,7 +218,6 @@ namespace RPG.Inventory
                         // Item is already equipped?
                         if (slot?.equipment == equipment)
                         {
-                            Debug.Log("unequipping: " + equipment.name);
                             equipment.Unequip(inventoryOwner);
                             Draw();
                             return;

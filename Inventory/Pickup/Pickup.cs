@@ -6,9 +6,9 @@ using RPG.Saving;
 
 namespace RPG.Inventory
 {
-    public class Chest : MonoBehaviour, ISaveable
+    public class Pickup : MonoBehaviour, ISaveable
     {
-        public string displayText = "E) To open chest";
+        public string displayText = "E) Pick ";
         GameObject actionPopup; 
 
         [SerializeField]
@@ -29,7 +29,6 @@ namespace RPG.Inventory
         {
             if (other.gameObject.tag == "Player" && isCollected == false)
             {
-                actionPopup.GetComponent<Text>().text = displayText;
 
                 isInRange = true;
             }
@@ -44,8 +43,30 @@ namespace RPG.Inventory
 
             if (isInRange)
             {
-                if (Input.GetKeyDown(KeyCode.E)) {
-                    GetComponent<Animator>().SetTrigger("OPEN");
+
+                RaycastHit hit = new RaycastHit();
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition).origin,
+                                    Camera.main.ScreenPointToRay(Input.mousePosition).direction, out hit, 100,
+                                    Physics.DefaultRaycastLayers))
+                {
+                    if (hit.transform.gameObject == this.gameObject)
+                    {
+                        HandlePickable();
+                    }
+                }
+                else
+                {
+                                    actionPopup.GetComponent<Text>().text = "";
+                }
+
+            }
+        }
+
+        void HandlePickable()
+        {
+           actionPopup.GetComponent<Text>().text = displayText + gameObject.name;
+
+            if (Input.GetKeyDown(KeyCode.E)) {
 
                     isCollected = true;
 
@@ -59,8 +80,6 @@ namespace RPG.Inventory
 
                     Deactivate();
                 }
-
-            }
         }
 
         void OnTriggerExit(Collider other)
@@ -77,9 +96,8 @@ namespace RPG.Inventory
 
             if (actionPopup != null) actionPopup.GetComponent<Text>().text = "";
 
-            // If item was collected, deactivate this gameObject
-            GetComponent<SphereCollider>().enabled = false;
 
+            Destroy(this.gameObject);
 
         }
 
@@ -96,7 +114,6 @@ namespace RPG.Inventory
 
             if (collected == true)
             {
-                GetComponent<Animator>().SetTrigger("OPEN");
 
                 // If item was collected, deactivate this gameObject
                 Deactivate();

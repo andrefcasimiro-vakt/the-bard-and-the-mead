@@ -12,6 +12,10 @@ namespace RPG.UI {
         public GameObject itemOwner;
         public GameObject inventoryUI;
         public ScriptableItem equippedItem;
+
+        void Start()
+        {
+        }
     
         public void RemoveItem()
         {
@@ -19,6 +23,11 @@ namespace RPG.UI {
 
             // Redraw inventory
             inventoryUI.GetComponent<InventoryManager>().Draw();
+
+            if (equippedItem.droppedInstance == null) return;
+
+            // Instantiate droppable graphic
+            Instantiate(equippedItem.droppedInstance, Camera.main.transform.position - Vector3.forward, Quaternion.identity);
         }
 
     }
