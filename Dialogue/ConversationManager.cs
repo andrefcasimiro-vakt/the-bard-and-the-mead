@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using RPG.AIV3;
 using RPG.Dialogue.Core;
 using RPG.Events;
+using RPG.Control;
 using System.Collections.Generic;
 
 namespace RPG.Dialogue {
@@ -26,6 +27,9 @@ namespace RPG.Dialogue {
         [SerializeField] GameObject dialogueOwner;
         [SerializeField] string dialogueOwnerName;
         [SerializeField] GameObject defaultCutsceneCamera;
+
+        [Header("SFX")]
+        public AudioClip popupGui;
 
         List<DialogueEvent> events = new List<DialogueEvent>();
 
@@ -78,7 +82,6 @@ namespace RPG.Dialogue {
             );
 
             dialogueInProgress = true;
-
         }
 
         private void Update()
@@ -88,6 +91,7 @@ namespace RPG.Dialogue {
             {
                     if (Input.GetKeyDown(KeyCode.E) && !dialogueInProgress)
                     {
+                        GetComponent<AudioSource>().PlayOneShot(popupGui);
                         OnDialogueStart();
                     }
             }
@@ -107,11 +111,11 @@ namespace RPG.Dialogue {
             // Restore AI previous state that was set before the conversation took place
             dialogueOwner.GetComponent<AI_Core_V3>().SetState(AGENT_STATE.PATROL);
 
-            dialogueInProgress = false;
-
 
             instantiatedDialogueUi.SetActive(false);
             DrawGUI();
+
+            dialogueInProgress = false;
         }
 
         // UI Action Popup Logic

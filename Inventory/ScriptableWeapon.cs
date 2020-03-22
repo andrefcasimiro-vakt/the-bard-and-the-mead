@@ -24,12 +24,18 @@ namespace RPG.Inventory {
 
         [Header("Audioclips")]
         public List<Soundclip> soundclips = new List<Soundclip>();
+        public List<Soundclip> defenseSoundClips = new List<Soundclip>();
+
+        [Header("---")]
 
         // The time to trigger the grunt of the owner who wields the weapon
         // This is done so the owner's grunt can know when to match with the animation of this weapon
         public float gruntTimeToTrigger = 0.1f;
 
         public AudioClip hitSFX;
+
+        // If is a weapon, can be a metallic sound when impact happens
+        public AudioClip parryHitSFX;
 
         [Header("Particles")]
         public GameObject particlePrefab;

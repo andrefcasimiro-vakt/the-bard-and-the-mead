@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;   
 using UnityEngine.SceneManagement;
 using UnityEngine.AI;
 using UnityEngine.UI;
@@ -25,6 +26,11 @@ namespace RPG.Core
         [Header("Transition Settings")]
         public float fadeTimeBetweenScenes = 0.25f;
 
+        [Header("Events")]
+        public UnityEvent OnAction;
+
+        public LayerMask layersToConsider;
+
         Fader fader;
         SavingWrapper savingWrapper;
 
@@ -42,12 +48,33 @@ namespace RPG.Core
         {
             if (isNear)
             {
-                if (Input.GetKeyDown(KeyCode.E))
+                RaycastHit hit = new RaycastHit();
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition).origin,
+                                    Camera.main.ScreenPointToRay(Input.mousePosition).direction, out hit, 100,
+                                    layersToConsider))
                 {
-                    actionPopup.GetComponent<Text>().text = "";
+                    // Allow item to be picked since user is eyeing it
+                    if (hit.transform.gameObject == this.gameObject)
+                    {
+                        actionPopup.GetComponent<Text>().text = displayText;
 
-                    StartCoroutine(Transition());
+                       if (Input.GetKeyDown(KeyCode.E))
+                        {
+                            OnAction.Invoke();
+
+                            actionPopup.GetComponent<Text>().text = "";
+
+                            StartCoroutine(Transition());
+                        }
+                    }
+                    else
+                    // Make text to pick up invisible since we looked away
+                    {
+                        actionPopup.GetComponent<Text>().text = "";
+                    }
                 }
+
+                
             }
         }
 
@@ -55,7 +82,6 @@ namespace RPG.Core
         {
             if (other.tag == "Player")
             {
-                actionPopup.GetComponent<Text>().text = displayText;
                 isNear = true;
             }
         }
@@ -104,8 +130,6 @@ namespace RPG.Core
         void UpdatePlayer(Teleport otherPortal)
         {
 
-            Debug.Log("otherPortal: " + otherPortal);
-
             GameObject player = GameObject.FindWithTag("Player");
 
             player.transform.position = otherPortal.spawnPoint.position;
@@ -117,7 +141,6 @@ namespace RPG.Core
             // We modify this portal name before we destroy it so we can use the same portal name across
             // different scenes
             this.gameObject.name = this.gameObject.name + "_";
-
 
             return GameObject.Find(destinationPortalName).GetComponent<Teleport>();
         }

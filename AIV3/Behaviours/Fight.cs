@@ -9,12 +9,14 @@ using RPG.Weapon;
 using RPG.AI;
 using RPG.Saving;
 using System.Linq;
+using RPG.Stats;
 
 namespace RPG.AIV3 {
 
     public class Fight : AI_Behaviour {
 
         AI_Core_V3 context;
+        bool inProgress = false;
 
         public Fight (AI_Core_V3 context)
         {
@@ -23,25 +25,28 @@ namespace RPG.AIV3 {
 
         public override void Dispatch()
         {
-
-            if (context.inProgress) {
-                return;
-            }
-
             if (context.target == null) {
+                context.SetState(AGENT_STATE.PATROL);
                 return;
             }
 
             if (context.target.GetComponent<Health>().IsDead())
             {
+                context.SetState(AGENT_STATE.PATROL);
                 return;
             }
 
             // If my health is low
             if (context.health.IsLowHealth())
             {
-                context.SetState(AGENT_STATE.FLEE);
-                return;
+                float chanceToFlee = UnityEngine.Random.Range(0f, 1f);
+
+                if (chanceToFlee >= context.minimumChanceToFleeIfLowHealth)
+                {
+                    context.SetState(AGENT_STATE.FLEE);
+                    return;
+                }
+
             }
         
             // If my target is far away
@@ -55,22 +60,32 @@ namespace RPG.AIV3 {
                 return;
             }
 
-            // If my target is attacking me
-            if (AI_Helpers.TargetIsAttacking(context.target) == true) {
-                if (UnityEngine.Random.Range(0f, 1f) > 0.5f)
-                {
-                    context.StartCoroutine(Defend());
-                }
-            }
-            else // If nothing else, I will attack
+            if (inProgress)
+                return;
+
+
+            // Target is attacking, let's receive the attack and decide later if we should dodge or defend 
+            if (context.target.GetComponent<Battler>().IsAttacking())
             {
-                context.StartCoroutine(Attack());
+                float chanceToNotAttack = UnityEngine.Random.Range(0, 1f);
+                if (chanceToNotAttack >= 0.1f)
+                    return;
             }
 
+            float chanceToAttack = UnityEngine.Random.Range(0, 1f);
+
+            if (chanceToAttack < context.minimumChanceToAttack)
+            {
+                Debug.Log("Hit twice");
+                context.SetState(AGENT_STATE.CHASE);
+                return;
+            }
+
+            context.StartCoroutine(Attack());
         }
 
         public IEnumerator Attack() {
-            context.inProgress = true;
+            inProgress = true;
 
             context.battler.Attack();
 
@@ -80,29 +95,16 @@ namespace RPG.AIV3 {
             // Now Wait Until Attack Animation Is Over
             yield return new WaitUntil(() => context.battler.IsAttacking() == false);
 
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
+            float seconds = context.baseAttackCooldown * UnityEngine.Random.Range(1f, 2f);
 
-            context.inProgress = false;
+            float agility = context.gameObject.GetComponent<BaseStats>().GetAgility() * 0.0001f;
 
-            yield return null;
-        }
+            yield return new WaitForSeconds(seconds - agility);
 
-        public IEnumerator Defend() {
-            context.inProgress = true;
 
-            context.battler.Defend();
+            context.SetState(AGENT_STATE.CHASE);
 
-            // Wait Until We Trigger Attack Animation
-            yield return new WaitUntil(() => context.battler.IsDefending() == true);
-
-            // Now Wait Until Attack Animation Is Over
-            yield return new WaitUntil(() => context.battler.IsDefending() == false);
-
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
-            
-            context.inProgress = false;
-
-            yield return null;
+            inProgress = false;
         }
 
     }

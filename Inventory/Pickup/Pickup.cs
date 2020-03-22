@@ -16,9 +16,11 @@ namespace RPG.Inventory
 
         public bool isCollected = false;
 
-        public UnityEvent OnOpen;
+        public UnityEvent OnPickup;
 
         bool isInRange = false;
+
+        public LayerMask layersToConsider;
 
         void Start()
         {
@@ -43,28 +45,28 @@ namespace RPG.Inventory
 
             if (isInRange)
             {
-
                 RaycastHit hit = new RaycastHit();
                 if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition).origin,
                                     Camera.main.ScreenPointToRay(Input.mousePosition).direction, out hit, 100,
-                                    Physics.DefaultRaycastLayers))
+                                    layersToConsider))
                 {
+                    // Allow item to be picked since user is eyeing it
                     if (hit.transform.gameObject == this.gameObject)
                     {
                         HandlePickable();
                     }
+                    else
+                    // Make text to pick up invisible since we looked away
+                    {
+                        actionPopup.GetComponent<Text>().text = "";
+                    }
                 }
-                else
-                {
-                                    actionPopup.GetComponent<Text>().text = "";
-                }
-
             }
         }
 
         void HandlePickable()
         {
-           actionPopup.GetComponent<Text>().text = displayText + gameObject.name;
+           actionPopup.GetComponent<Text>().text = displayText;
 
             if (Input.GetKeyDown(KeyCode.E)) {
 
@@ -76,7 +78,7 @@ namespace RPG.Inventory
                         player.GetComponent<CharacterInventory>().Add(item);
                     }
 
-                    OnOpen.Invoke();
+                    OnPickup.Invoke();
 
                     Deactivate();
                 }
@@ -121,7 +123,6 @@ namespace RPG.Inventory
         }
 
         public void OnCleanState() {
-            
         }
     }
 

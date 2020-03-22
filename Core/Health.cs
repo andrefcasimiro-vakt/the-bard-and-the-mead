@@ -1,10 +1,14 @@
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Stats;
-using RPG.AI;
 using RPG.AIV3;
 using RPG.Combat;
+using RPG.Control;
 using RPG.Saving;
+using RPG.Inventory;
+using RPG.Weapon;
+using RPG.Stats;
+using UnityEngine.Events;
 
 namespace RPG.Core {
 
@@ -18,24 +22,30 @@ namespace RPG.Core {
         [SerializeField] float bonusHealthPoints;
 
         [Header("Animator")]
-        [SerializeField] const string DieTrigger = "Die";
+        [SerializeField] string DieTrigger = "Die";
 
         BaseStats baseStats => GetComponent<BaseStats>();
         Animator animator => GetComponent<Animator>();
         
-
         [Header("UI")]
         [SerializeField] Slider healthbar;
 
-        // AI
-        AIController aiController => GetComponent<AIController>();
+        [Header("Events")]
+        public UnityEvent OnDieEvent;
+        
+        [Header("Defense")]
+        [Tooltip("When user is defending against enemy attacks")]
+        public int defenseBuff = 0;
+
+        AudioSource audioSource => GetComponent<AudioSource>();
 
         void Start()
         {
+            // In case we have a save game, we also need to calculate the currentHealthPoints based 
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
         }
 
-        private void Update()
+        private void FixedUpdate()
         {
             UpdateHealthSlider();
         }
@@ -44,7 +54,7 @@ namespace RPG.Core {
         {
             healthbar.maxValue = GetMaxHealthPoints();
             healthbar.minValue = 0f;
-            healthbar.value = GetCurrentHealth();
+            healthbar.value = currentHealthPoints;
         }
 
         public void Restore(float restoreAmount)
@@ -52,34 +62,96 @@ namespace RPG.Core {
             currentHealthPoints = Mathf.Min(currentHealthPoints + restoreAmount, maxHealthPoints);
         }
 
-        public void TakeDamage(float damageAmount)
+        public void TakeDamage(float damageAmount, GameObject damageOwner)
         {
+                                        Debug.Log("damageAmount  " + damageAmount);
+
             if (IsDead())
-            {
+            {    
                 return;
             }
 
-            currentHealthPoints = Mathf.Max(currentHealthPoints - damageAmount, 0);
+            // Get base stats for defense
+            defenseBuff = (int)GetComponent<BaseStats>().GetDefense();
 
-            // Is AI?
-            if (aiController != null)
+
+            CharacterEquipmentSlot charEquipmentSlots = GetComponent<CharacterEquipmentSlot>();
+
+            int armorRate = 0;
+            if (charEquipmentSlots != null)
             {
-                aiController.SetState(StateMachineEnum.TAKE_DAMAGE);
+                armorRate = (int)charEquipmentSlots.GetArmorBonus();
+            }
+            defenseBuff += (int)armorRate; // Influenced by char stats as well
+
+            // If we are defending, consult the equipped weapon or shield to check how much damage it should absorb using its defenseRate property
+            if (GetComponent<Battler>().IsDefending())
+            {
+                // Assume we don't have a shield equipped, use weapon
+                defenseBuff += (int)GetComponent<WeaponManager>().weaponSlots[0].currentWeapon.defenseRate;
             }
 
-            if (currentHealthPoints <= 0f)
+            Debug.Log("------");
+            Debug.Log("CHARACTER :::: " + gameObject.name);
+            Debug.Log("damage amount that I will get" + damageAmount);
+            Debug.Log("my defense buff" + defenseBuff);
+
+            // Finally, update the damage we will receive
+            float damage = Mathf.Clamp(damageAmount - defenseBuff, 0, maxHealthPoints);
+            
+            Debug.Log("Damage that I will get:  " + damage);
+            Debug.Log("------");
+
+            currentHealthPoints = Mathf.Max(currentHealthPoints - damage, 0);
+
+            
+            UpdateHealthSlider();
+
+
+            // Now evaluate result
+            if (currentHealthPoints > 0f)
+            {
+                AI_Core_V3 ai = GetComponent<AI_Core_V3>();
+
+                // Non-player case
+                if (ai != null)
+                {   
+                    ai.SetTarget(damageOwner);
+
+                    ai.SetState(AGENT_STATE.TAKING_DAMAGE);
+                }
+                else
+                {
+                    GetComponent<Battler>().TakeDamage();
+                }
+            }
+            else
             {
                 // Reward target with experience points
-                GetComponent<AI_Core_V3>().target.GetComponent<BaseStats>().IncreaseExperience(
+                damageOwner.GetComponent<BaseStats>().IncreaseExperience(
                     GetComponent<Battler>().GetRewardExperience()
                 );
 
                 Die();
+
+                OnDieEvent.Invoke();
+
+                // Remove strafe from player
+                PlayerController playerController = damageOwner.GetComponent<PlayerController>();
+                if (playerController != null)
+                {
+                    playerController.Strafe(false);
+                }
             }
         }
 
         public void Die()
-        {
+        {   
+            if (this.gameObject.tag == "Player")
+            {
+                GetComponent<ComponentManager>().ToggleComponents(false);
+            }
+
             animator.SetTrigger(DieTrigger);
         }
 
@@ -126,7 +198,7 @@ namespace RPG.Core {
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
             if (currentHealthPoints == 0f) {
                 currentHealthPoints = maxHealthPoints;
-            }
+            }        
         }
     }
 

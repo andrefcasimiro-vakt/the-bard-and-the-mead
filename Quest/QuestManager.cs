@@ -35,7 +35,7 @@ namespace RPG.Quest {
         List<ScriptableQuest> currentQuests = new List<ScriptableQuest>();
 
         // Current quest
-        ScriptableQuest selectedQuest;
+        RPG.Quest.Quest selectedQuest;
 
         GameObject player;
 
@@ -101,7 +101,7 @@ namespace RPG.Quest {
                 Destroy(child.gameObject);
             }
 
-            List<ScriptableQuest> currentQuests = characterQuests?.currentQuests;
+            List<RPG.Quest.Quest> currentQuests = characterQuests?.currentQuests;
 
             if (currentQuests == null)
             {
@@ -109,7 +109,7 @@ namespace RPG.Quest {
             }
 
             // Clean quest list panel first
-            foreach (ScriptableQuest quest in currentQuests)
+            foreach (RPG.Quest.Quest quest in currentQuests)
             {
                 GameObject questButton = Instantiate(QuestListButtonPrefab);
                 questButton.transform.SetParent(QuestListPanel.transform);
@@ -167,7 +167,7 @@ namespace RPG.Quest {
 
         }
 
-        void SetActiveQuest (ScriptableQuest quest)
+        void SetActiveQuest (RPG.Quest.Quest quest)
         {
             selectedQuest = quest;
 

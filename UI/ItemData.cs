@@ -27,7 +27,7 @@ namespace RPG.UI {
             if (equippedItem.droppedInstance == null) return;
 
             // Instantiate droppable graphic
-            Instantiate(equippedItem.droppedInstance, Camera.main.transform.position - Vector3.forward, Quaternion.identity);
+            Instantiate(equippedItem.droppedInstance, Camera.main.transform.position +  Vector3.forward, Quaternion.identity);
         }
 
     }

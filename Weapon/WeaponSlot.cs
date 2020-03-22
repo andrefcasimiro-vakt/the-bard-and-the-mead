@@ -4,6 +4,7 @@ using RPG.Core;
 using RPG.Combat;
 using RPG.Inventory;
 using RPG.AIV3;
+using RPG.Stats;
 
 namespace RPG.Weapon {
 
@@ -30,6 +31,9 @@ namespace RPG.Weapon {
         const string AttackTrigger = "Attack";
         const string DefendTrigger = "Defend";
         const string DodgeTrigger = "Dodge";
+
+
+        bool canAttack;
 
         void Awake()
         {
@@ -105,9 +109,9 @@ namespace RPG.Weapon {
             // Owner of weapon has enough stamina to perform next attack?
             Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
 
-            bool canAttack =
-                ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost)
-                || !battler.IsTakingDamage()
+            canAttack =
+                (ownerStamina != null && currentWeapon != null && ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost) )
+                || (battler != null && !battler.IsTakingDamage())
             ;
 
             if (!canAttack)
@@ -121,8 +125,35 @@ namespace RPG.Weapon {
             weaponOwner.GetComponent<Animator>().SetTrigger(AttackTrigger);
 
             StartCoroutine(HandleAttack());
-            StartCoroutine(HandleSound());
+            StartCoroutine(HandleAttackSound());
             StartCoroutine(HandleGrunt(gruntAudioClip));
+        }
+
+        public void Defend()
+        {
+            /*
+           // Owner of weapon has enough stamina to perform next attack?
+            Stamina ownerStamina = weaponOwner.GetComponent<Stamina>();
+
+            bool canAttack = 
+                (ownerStamina != null && 
+                    ownerStamina.HasStaminaAgainstCostAction(currentWeapon.staminaCost)
+                )
+                || !battler.IsTakingDamage()
+            ;
+
+            if (!canAttack)
+            {
+                return;
+            }
+            
+            ownerStamina.DecreaseStamina(currentWeapon.staminaCost * 100f);
+
+            
+            */
+
+
+            StartCoroutine(HandleDefenseSound());
         }
 
         // PRIVATE METHODS
@@ -134,9 +165,20 @@ namespace RPG.Weapon {
             hitbox.Disable();
         }
 
-        IEnumerator HandleSound()
+        IEnumerator HandleAttackSound()
         {
             foreach (Soundclip soundclip in currentWeapon.soundclips)
+            {
+                yield return new WaitForSeconds(soundclip.timeToTrigger);
+                if (canAttack) {
+                    audioSource.PlayOneShot(soundclip.clip);
+                }
+            }
+        }
+
+        IEnumerator HandleDefenseSound()
+        {
+            foreach (Soundclip soundclip in currentWeapon.defenseSoundClips)
             {
                 yield return new WaitForSeconds(soundclip.timeToTrigger);
                 audioSource.PlayOneShot(soundclip.clip);
@@ -162,32 +204,78 @@ namespace RPG.Weapon {
 
         void HitTarget()
         {
+            AI_Core_V3 targetAi = hitbox.target.GetComponent<AI_Core_V3>();
+
             // If I am player, I don't want to hit npcs or player friends
-            if (weaponOwner.tag == "Player" && hitbox.target.GetComponent<AI_Core_V3>().alliance != ALLIANCE.ENEMY)
+            if (weaponOwner.tag == "Player" && targetAi.alliance != ALLIANCE.ENEMY)
             {
                 return;
             }
 
-            // Apply damage to hitbox current target
-            hitbox.target.GetComponent<Health>().TakeDamage(currentWeapon.weaponDamage);
+            // If target is not Player
+            if (targetAi != null)
+            {
+                // Decide here if we take the damage
+                float chance = UnityEngine.Random.Range(0, 1f);
 
+                if (chance >= targetAi.minimumChanceToDefend)
+                {
+
+                    // Get parry sfx from our health owner
+                    AudioClip parryClip = targetAi.GetComponent<WeaponManager>().weaponSlots[0].currentWeapon.parryHitSFX;
+                    
+                    if (parryClip)
+                    {
+                        audioSource.PlayOneShot(parryClip);
+                    }
+
+                    targetAi.SetState(AGENT_STATE.DEFEND);
+                    return;
+                }
+
+                if (chance >= targetAi.minimumChanceToDodge)
+                {
+                    // Get parry sfx from our health owner
+                    AudioClip dodgeClip = targetAi.GetComponent<Battler>().dodgeClip;
+                    
+                    if (dodgeClip)
+                    {
+                        audioSource.PlayOneShot(dodgeClip);
+                    }
+
+                    targetAi.SetState(AGENT_STATE.DODGE);
+                    return;
+                }
+            }
+
+
+            // Calculate damage (mix of weapon and characterStats)
+            float damage = currentWeapon.weaponDamage;
+
+            damage += weaponOwner.GetComponent<BaseStats>().GetAttack();
+            
+            Debug.Log("Character current attack power: "+ weaponOwner.GetComponent<BaseStats>().GetAttack());
+            Debug.Log("Damage applied: " + damage);
+
+            // Apply damage to hitbox current target
+            hitbox.target.GetComponent<Health>().TakeDamage(damage, weaponOwner);
+
+            // Play SFX
+            if (hitbox.target.GetComponent<Battler>().IsDefending())
+            {
+                // Get target equipped weapon to know what the impact sound should sound like
+                audioSource.PlayOneShot(hitbox.target.GetComponent<WeaponManager>().weaponSlots[0].currentWeapon.parryHitSFX);
+                audioSource.PlayOneShot(currentWeapon.hitSFX);
+
+                return;
+            }
+
+            audioSource.PlayOneShot(currentWeapon.hitSFX);
             // Get center position of target based on their capsule collider
             Vector3 targetCenter = hitbox.target.GetComponent<CapsuleCollider>().bounds.center;
 
             // Add FX
             Instantiate(currentWeapon.particlePrefab, targetCenter, Quaternion.identity);
-
-            // Play SFX
-            audioSource.PlayOneShot(currentWeapon.hitSFX);
-
-             // AI Update
-            AI_Core_V3 targetAI = hitbox.target.GetComponent<AI_Core_V3>();
-
-            if (targetAI != null)
-            {
-                // Set the owner of the attack to be the next target of the AI that was hit
-                targetAI.TakeDamage(weaponOwner);
-            }
         }
 
         float GetHitboxActivationTime()
@@ -216,7 +304,6 @@ namespace RPG.Weapon {
             if (_h == null)
             {
                 _h = weaponGameObject.transform.GetChild(0).GetComponent<WeaponReferences>().hitbox.GetComponent<Hitbox>();
-            Debug.Log("went inside:" + _h);
             }
 
             return _h;

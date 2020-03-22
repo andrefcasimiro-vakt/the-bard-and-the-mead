@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using RPG.Control;
 
 namespace RPG.EventSystem { 
     public class DisplayMessage : Template
@@ -24,9 +25,13 @@ namespace RPG.EventSystem {
         public AudioClip typewriterSoundClip;
         public AudioClip audioClipOnInput;
 
+        GameObject player;
+
         private void Start()
         {
             letterPause = (float)(letterPause * 0.01);
+            
+            player = GameObject.FindWithTag("Player");
         }
 
         public void Display()
@@ -36,6 +41,11 @@ namespace RPG.EventSystem {
 
         public override IEnumerator Dispatch()
         {
+            if (player != null)
+            {
+                player.GetComponent<ComponentManager>().ToggleComponents(false);
+            }
+
             yield return StartCoroutine(DisplayText());
         }
 
@@ -96,17 +106,20 @@ namespace RPG.EventSystem {
             // Play exit animation for UI
             DisplayTextUIInstance.GetComponentInChildren<Animator>().SetTrigger("Exit");
 
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(.1f);
 
             // Destroy UI
             Destroy(DisplayTextUIInstance);
             Destroy(audioSource);
 
-            // End event
-            yield return null;
+            if (player != null)
+            {
+                player.GetComponent<ComponentManager>().ToggleComponents(true);
+            }
         }
 
         public bool HasPressedKey() {
+
             return (
                 Input.GetButtonDown("Action")
                 || Input.GetKeyDown(KeyCode.E)

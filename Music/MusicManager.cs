@@ -50,6 +50,7 @@ namespace RPG.Music {
         {
             MUSIC_STATE _nextState = (MUSIC_STATE)Enum.Parse(typeof(MUSIC_STATE), nextState);
 
+            // If states are the same, dont do nothing
             if (_nextState == this.state)
             {
                 return;
@@ -68,6 +69,8 @@ namespace RPG.Music {
                 default:
                     break;
             }
+
+            state = _nextState;
         }
 
         public void SetCurrentBGM(AudioClip currentBGM)
@@ -79,13 +82,42 @@ namespace RPG.Music {
         {
             audioSource.clip = currentBGM;
 
-            audioSource.Play();
+            StartCoroutine(Dispatch());
         }
 
         public void Stop()
         {
             state = MUSIC_STATE.NONE;
             audioSource.Stop();
+        }
+
+        public IEnumerator Dispatch() {
+            yield return StartCoroutine(FadeOut());
+
+
+            yield return StartCoroutine(FadeIn());
+
+        }
+
+        public IEnumerator FadeIn()
+        {
+            audioSource.Play();
+
+            while (audioSource.volume < 1)
+            {
+                audioSource.volume += Time.deltaTime / 0.5f;
+                yield return null; // Yield one frame;
+            }
+
+        }
+
+        public IEnumerator FadeOut()
+        {
+            while (audioSource.volume > 0)
+            {
+                audioSource.volume -= Time.deltaTime / 0.5f;
+                yield return null; // Yield one frame;
+            }
         }
 
     }

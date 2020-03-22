@@ -18,6 +18,8 @@ namespace RPG.Inventory
 
         public UnityEvent OnOpen;
 
+        public LayerMask layersToConsider;
+
         bool isInRange = false;
 
         void Start()
@@ -29,7 +31,6 @@ namespace RPG.Inventory
         {
             if (other.gameObject.tag == "Player" && isCollected == false)
             {
-                actionPopup.GetComponent<Text>().text = displayText;
 
                 isInRange = true;
             }
@@ -44,22 +45,40 @@ namespace RPG.Inventory
 
             if (isInRange)
             {
-                if (Input.GetKeyDown(KeyCode.E)) {
-                    GetComponent<Animator>().SetTrigger("OPEN");
-
-                    isCollected = true;
-
-                    GameObject player = GameObject.FindWithTag("Player");
-                    foreach (ScriptableItem item in itemsToPick)
+                RaycastHit hit = new RaycastHit();
+                if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition).origin,
+                                    Camera.main.ScreenPointToRay(Input.mousePosition).direction, out hit, 100,
+                                    layersToConsider))
+                {
+                    // Allow item to be picked since user is eyeing it
+                    if (hit.transform.gameObject == this.gameObject)
                     {
-                        player.GetComponent<CharacterInventory>().Add(item);
+                        actionPopup.GetComponent<Text>().text = displayText;
+
+                        if (Input.GetKeyDown(KeyCode.E)) {
+                            actionPopup.GetComponent<Text>().text = "";
+
+                            GetComponent<Animator>().SetTrigger("OPEN");
+
+                            isCollected = true;
+
+                            GameObject player = GameObject.FindWithTag("Player");
+                            foreach (ScriptableItem item in itemsToPick)
+                            {
+                                player.GetComponent<CharacterInventory>().Add(item);
+                            }
+
+                            OnOpen.Invoke();
+
+                            Deactivate();
+                        }
                     }
-
-                    OnOpen.Invoke();
-
-                    Deactivate();
+                    else
+                    // Make text to pick up invisible since we looked away
+                    {
+                        actionPopup.GetComponent<Text>().text = "";
+                    }
                 }
-
             }
         }
 

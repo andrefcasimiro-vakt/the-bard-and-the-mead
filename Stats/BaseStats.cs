@@ -32,7 +32,6 @@ namespace RPG.Stats {
         [SerializeField]
         Progression progression;
 
-
         private void Update()
         {
             if (expSplider != null)
@@ -57,17 +56,27 @@ namespace RPG.Stats {
         
         public float GetHealth()
         {
-            return progression.GetHealth(startLevel, characterClass, characterRace, characterGender);
+            return progression.GetHealth(currentLevel, characterClass, characterRace, characterGender);
         }
 
         public float GetStamina()
         {
-            return progression.GetStamina(startLevel, characterClass, characterRace, characterGender);
+            return progression.GetStamina(currentLevel, characterClass, characterRace, characterGender);
         }
 
         public float GetAgility()
         {
-            return progression.GetAgility(startLevel, characterClass, characterRace, characterGender);
+            return progression.GetAgility(currentLevel, characterClass, characterRace, characterGender);
+        }
+
+        public float GetAttack()
+        {
+            return progression.GetAttackPoints(currentLevel, characterClass, characterRace, characterGender);
+        }
+
+        public float GetDefense()
+        {
+            return progression.GetDefensePoints(currentLevel, characterClass, characterRace, characterGender);
         }
 
         public bool IsMale()

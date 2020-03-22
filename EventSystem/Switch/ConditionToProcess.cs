@@ -5,43 +5,115 @@ using UnityEngine;
 using UnityEngine.Events;
 
 namespace RPG.Switch {
-    public class ConditionToProcess : MonoBehaviour
+
+    [System.Serializable]
+    public class ConditionTest
     {
+        /// The identifier
+        public string key;
+        /// If set, will invert the condition
+        public bool invert;
+        /// The actual test
         public ICondition test;
 
-        public bool inverse = false;
+        public ConditionTest(string key, bool invert, ICondition test)
+        {
+            this.key = key;
+            this.invert = invert;
+            this.test = test;
+        }
+
+    }
+
+
+    public class ConditionToProcess : MonoBehaviour
+    {
+        public ConditionTest[] tests;
+
+        [Header("Optimizations")]
+        public bool useRange = false;
+        [Range(0, 100)] public float minimumRangeToPlayerBeforeBeginProcessing = 10f;
+
+        [Header("Conditional Rendering Options")]
+        [Tooltip("Start children deactivated")]
+        public bool deactivateChildrenOnAwake = true;
 
         [Tooltip("If set, will toggle the first children at the game object")]
         public bool childrenOnly = false;
-
         [Tooltip("If set, will toggle a component instead of the game object")]
         public MonoBehaviour componentToToggle;
 
+        [Header("Debugger")]
+        public bool useDebug;
+
+        // Private
+        GameObject player;
+
+        void Awake()
+        {
+            if (deactivateChildrenOnAwake)
+            {
+                foreach (Transform t in transform)
+                {
+                    t.gameObject.SetActive(false);
+                }
+            }
+        }
+
+        void Start()
+        {
+            player = GameObject.FindWithTag("Player");
+        }
+
         public void Update()
         {
-            bool condition = test.Check();
-            bool result = false;
-
-            if (condition) {
-                 result = inverse ? false : true;
-
-            } else {
-                 result = inverse ? true : false;
-            }
-
-            if (componentToToggle != null)
+            if (useRange)
             {
-                componentToToggle.enabled = result;
-                return;
+                if (Vector3.Distance(this.gameObject.transform.position, player.transform.position) > minimumRangeToPlayerBeforeBeginProcessing)
+                {
+                    return;
+                }
             }
+
+            // Condition must begin as true since we are joining it in every iteration with the next condition
+            bool condition = true;
+
+            if (tests.Length >= 1)
+            {
+                // Combine multiple conditions
+                foreach(ConditionTest check in tests)
+                {
+                    condition = check.invert
+                        ? condition && !check.test.Check()
+                        : condition && check.test.Check();
+
+                    if (useDebug)
+                        Debug.Log(check.key + " ::: " + condition);
+                }
+            }
+
             
+            // Should we toggle children instead?
             if (childrenOnly)
             {
-                gameObject.transform.GetChild(0).gameObject.SetActive(result);
+                foreach (Transform child in gameObject.transform)
+                {
+                    child.gameObject.SetActive(condition);
+                }
                 return;
             }
 
-            this.gameObject.SetActive(result);
+
+
+            // Should we enable / disable a MonoBehaviour component?
+            if (componentToToggle != null)
+            {
+                componentToToggle.enabled = condition;
+                return;
+            }
+        
+            // Deactivate this component (Cant think if this will ever be useful)
+            this.gameObject.SetActive(condition);
         }
     }
 }

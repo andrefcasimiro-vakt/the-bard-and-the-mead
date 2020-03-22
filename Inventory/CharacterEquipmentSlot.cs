@@ -41,6 +41,25 @@ namespace RPG.Inventory
         public Slot leftWeapon;
         public Slot rightWeapon;
 
+        public float GetArmorBonus()
+        {
+            return
+            (
+                // Whenever I have time, I should probably unregret this
+                (head != null && head.equipment ? head.equipment.defenseRate : 0f)
+                + (torso != null && torso.equipment ? torso.equipment.defenseRate : 0f)
+                + (leftUpperArm != null && leftUpperArm.equipment ? leftUpperArm.equipment.defenseRate  : 0f)
+                + (leftLowerArm != null && leftLowerArm.equipment ? leftLowerArm.equipment.defenseRate  : 0f)
+                + (leftHand != null && leftHand.equipment ? leftHand.equipment.defenseRate  : 0f)
+                + (rightUpperArm != null && rightUpperArm.equipment ? rightUpperArm.equipment.defenseRate : 0f)
+                + (rightLowerArm != null && rightLowerArm.equipment ? rightLowerArm.equipment.defenseRate : 0f)
+                + (rightHand != null && rightHand.equipment ? rightHand.equipment.defenseRate : 0f)
+                + (hips != null && hips.equipment ? hips.equipment.defenseRate : 0f)
+                + (leftLeg != null && leftLeg.equipment ? leftLeg.equipment.defenseRate : 0f)
+                + (rightLeg != null && rightLeg.equipment ?  rightLeg.equipment.defenseRate : 0f)
+            );
+        }
+
         public void EquipOnSlot (BodyPart bodyPart, ScriptableEquipment equipment)
         {
             switch (bodyPart)

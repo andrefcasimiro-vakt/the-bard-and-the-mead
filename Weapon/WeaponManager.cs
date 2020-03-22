@@ -25,6 +25,16 @@ namespace RPG.Weapon {
             }
         }
 
+        public void Defend(
+        )
+        {
+            foreach(WeaponSlot weaponSlot in weaponSlots)
+            {
+                weaponSlot.Defend();
+            }
+        }
+
+
         // Combine all weaponRanges from equipped weapons to determine how far from the target should we be
         public float GetStoppingDistance()
         {

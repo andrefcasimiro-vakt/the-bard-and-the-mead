@@ -28,6 +28,9 @@ namespace RPG.AIV3 {
             GameObject owner
         )
         {
+            if (target == null)
+                return;
+
             Vector3 targetPosition = new Vector3(target.transform.position.x,
                                                    owner.transform.position.y,
                                                    target.transform.position.z);

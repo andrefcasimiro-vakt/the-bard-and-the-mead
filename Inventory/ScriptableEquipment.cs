@@ -9,6 +9,7 @@ namespace RPG.Inventory
     public class ScriptableEquipment : ScriptableItem
     {
         [Header("Stats")]
+        [Tooltip("Will be calculated along the other equipped armors. If it is a weapon, this value will be used when parrying an attack")]
         public float defenseRate = 1f;
         public float agilityMultiplier = 0f;
 
@@ -33,7 +34,6 @@ namespace RPG.Inventory
 
                 defaultAnimatorOverrideController = target.GetComponent<Animator>().runtimeAnimatorController;
                     
-                Debug.Log("got here on item type check validation for weapons");
                 target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, this);
                 target.GetComponent<WeaponManager>().weaponSlots[0].EquipWeapon(this as ScriptableWeapon);
 
@@ -77,7 +77,6 @@ namespace RPG.Inventory
             string graphicName = isMale ? maleGraphicGameObjectName : femaleGraphicGameObjectName;
 
             if (this.itemType == ItemEnum.WEAPON) {
-                Debug.Log("got here on item type check validation for weapons");
                 target.GetComponent<CharacterEquipmentSlot>().EquipOnSlot(bodyPart, null);
                 target.GetComponent<Animator>().runtimeAnimatorController = defaultAnimatorOverrideController as RuntimeAnimatorController;
 

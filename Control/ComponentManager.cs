@@ -14,12 +14,40 @@ namespace RPG.Control {
         PlayerController playerController => GetComponent<PlayerController>();
         Health health => GetComponent<Health>();
 
+        bool lockAnimator = false;
 
         void Update()
         {
-            tps.enabled = !health.IsDead();
-            input.enabled = !health.IsDead();
-            playerController.enabled = !health.IsDead();
+            if (health.IsDead())
+            {
+                ToggleComponents(false);
+            }
+        }
+
+        void FixedUpdate()
+        {
+            if (lockAnimator)
+            {
+                GetComponent<Animator>().SetFloat("InputVertical", 0f);
+            }
+        }
+
+        public void ToggleComponents(bool v)
+        {
+            tps.enabled = v;
+            input.enabled = v;
+            playerController.enabled = v;
+
+            lockAnimator = !v;
+
+            if (v == false)
+            {
+                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+            }
+            else
+            {
+                GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+            }
         }
 
     }

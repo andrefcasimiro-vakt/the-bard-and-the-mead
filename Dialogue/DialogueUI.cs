@@ -19,6 +19,8 @@ namespace RPG.Dialogue
 
         public GameObject arrow;
 
+        public AudioClip advanceSfx;
+
         bool repaint = false;
 
         GameObject player;
@@ -81,17 +83,21 @@ namespace RPG.Dialogue
                 return;
             }
 
+            Cursor.visible = true;
+            Cursor.lockState =CursorLockMode.None;
+
             if (repaint == true) { 
                 ManageDialogue();
             }
 
             if (
-                Input.GetKeyDown(KeyCode.Space) ||
+                // Input.GetKeyDown(KeyCode.Space) ||
                 Input.GetKeyDown(KeyCode.E) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter) ||
-                Input.GetButtonDown("Fire1")
+                Input.GetKeyDown(KeyCode.KeypadEnter)
+                // || Input.GetButtonDown("Fire1")
             )
             {
+                // Play Sound
                 AdvanceOnClick();
             }
         }
@@ -147,6 +153,7 @@ namespace RPG.Dialogue
             }
 
             dialogueOwner.GetComponent<Text>().text = conversationTree.dialogueOwnerName;
+            
             dialogueText.GetComponent<Text>().text = currentDialogue;
 
             // Clear choice button panel:
@@ -188,6 +195,9 @@ namespace RPG.Dialogue
 
         void Advance(string targetGuid)
         {
+            GetComponent<AudioSource>().clip = (advanceSfx);
+            GetComponent<AudioSource>().Play();
+
             // No text left? End Conversation
             if (string.IsNullOrEmpty(targetGuid))
             {

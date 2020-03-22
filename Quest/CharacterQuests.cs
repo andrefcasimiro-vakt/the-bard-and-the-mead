@@ -3,34 +3,39 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using RPG.Saving;
+using System.Linq;
 
 namespace RPG.Quest { 
+
+    [System.Serializable]
+    public class Quest
+    {
+        public int questId;
+        public string questTitle;
+        public string questLocation;
+        public string questDescription;
+        public List<QuestObjective> objectives = new List<QuestObjective>();
+    
+        public Quest(
+            int questId,
+            string questTitle,
+            string questLocation,
+            string questDescription,
+            List<QuestObjective> objectives
+        )
+        {
+            this.questId = questId;
+            this.questTitle = questTitle;
+            this.questLocation = questLocation;
+            this.questDescription = questDescription;
+            this.objectives = objectives;
+        }
+    }
+
+
     public class CharacterQuests : MonoBehaviour, ISaveable
     {
-        public List<ScriptableQuest> currentQuests = new List<ScriptableQuest>();
-
-        private SaveableQuest[] SerializeQuests()
-        {
-            List<SaveableQuest> saveableQuests = new List<SaveableQuest>();
-
-            foreach(ScriptableQuest currentQuest in currentQuests)
-            {
-                int questId = currentQuest.questId;
-                List<SaveableObjective> questObjectives = new List<SaveableObjective>();
-
-                // Build objectives
-                foreach(QuestObjective qObjective in currentQuest.objectives)
-                {
-                    questObjectives.Add(new SaveableObjective(qObjective.questObjectiveId, qObjective.isDone));
-
-                }
-                
-                saveableQuests.Add(new SaveableQuest(questId, questObjectives));
-            }
-
-            return saveableQuests.ToArray();
-        }
-
+        public List<Quest> currentQuests = new List<Quest>();
 
         /// Adds a quest and notifies the player
         public void AddQuest(ScriptableQuest quest)
@@ -45,9 +50,38 @@ namespace RPG.Quest {
             popup.GetComponent<Animator>().Play("Show");
             popup.transform.GetChild(0).gameObject.GetComponent<Text>().text = "New Quest: " + quest.name;
 
-            currentQuests.Add(quest);
+            // Create a copy of the ScriptableQuest since we can't mutate ScriptableObjects
+            Quest newQuest = new Quest(
+                quest.questId,
+                quest.questTitle,
+                quest.questLocation,
+                quest.questDescription,
+                quest.objectives
+            );
+
+            currentQuests.Add(newQuest);
         }
 
+        public void CompleteObjective(int objectiveId, int questId)
+        {
+            currentQuests.Find(x => x.questId == questId).objectives.Find(o => o.questObjectiveId == objectiveId).isDone = true;
+        }
+
+        // For editor purposes
+        public void CompleteObjective(string questInfo) // Should follow the following structure: 1:0 (left is questId, right is objectiveId)
+        {
+            string[] split = questInfo.Split(':');
+            int questId = System.Convert.ToInt32(split[0]);
+            int objectiveId = System.Convert.ToInt32(split[1]);
+
+
+            currentQuests.Find(x => x.questId == questId).objectives.Find(o => o.questObjectiveId == objectiveId).isDone = true;
+        }
+
+        private Quest[] SerializeQuests()
+        {
+            return currentQuests.ToArray();
+        }
 
         public object CaptureState()
         {
@@ -56,7 +90,7 @@ namespace RPG.Quest {
 
         public void RestoreState(object state)
         {
-            SaveableQuest[] savedQuests = (SaveableQuest[])state;
+            Quest[] savedQuests = (Quest[])state;
 
             currentQuests.Clear();
 
@@ -67,55 +101,11 @@ namespace RPG.Quest {
             
         }
 
-        public void LoadQuests(SaveableQuest[] savedQuests)
+        public void LoadQuests(Quest[] savedQuests)
         {
-            ScriptableQuest[] allExistingQuests = Resources.LoadAll<ScriptableQuest>("Quests");
-
-
-            foreach (ScriptableQuest quest in allExistingQuests)
-            {
-                foreach (SaveableQuest savedQuest in savedQuests)
-                {
-
-                    if (quest.questId == savedQuest.questId)
-                    {
-
-                        for (int i = 0; i < quest.objectives.Count; i++)
-                        {
-                            quest.objectives[i].isDone = savedQuest.questObjectives[i].isDone;
-                        }
-                        
-                        // Finally, add this match to the currentQuests list
-                        currentQuests.Add(quest);
-                    }
-                }
-            }
+            currentQuests = savedQuests.ToList();
         }
+
     }
 
-    [System.Serializable]
-    public class SaveableQuest
-    {
-        public int questId;
-        public List<SaveableObjective> questObjectives = new List<SaveableObjective>();
-
-        public SaveableQuest(int questId, List<SaveableObjective> questObjectives)
-        {
-            this.questId = questId;
-            this.questObjectives = questObjectives;
-        }
-    }
-
-    [System.Serializable]
-    public class SaveableObjective
-    {
-        public int objectiveId;
-        public bool isDone;
-
-        public SaveableObjective(int objectiveId, bool isDone)
-        {
-            this.objectiveId = objectiveId;
-            this.isDone = isDone;
-        }
-    }
 }

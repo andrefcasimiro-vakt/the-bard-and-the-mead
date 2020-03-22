@@ -1,6 +1,7 @@
 using UnityEngine;
 using RPG.Core;
 using RPG.Combat;
+using RPG.Weapon;
 using RPG.Saving;
 using Invector.CharacterController;
 
@@ -20,6 +21,7 @@ namespace RPG.Control {
         [Header("Sprint Input")]
         [SerializeField] float sprintStaminaCost = 5f;
 
+        vThirdPersonController vThirdPersonCC => GetComponent<vThirdPersonController>();
         vThirdPersonInput vThirdPersonInput => GetComponent<vThirdPersonInput>();
         Battler battler => GetComponent<Battler>();
         Stamina stamina => GetComponent<Stamina>();
@@ -46,19 +48,28 @@ namespace RPG.Control {
 
             if (Input.GetButtonDown(attackInput))
             {
-                Debug.Log("attacking");
                 battler.Attack();
                 timer = 0f;
 
                 return;
             }
 
+            // HANDLE PARRYING SOUNDS
             if (Input.GetButtonDown(defendInput))
+            {
+                GetComponent<WeaponManager>().Defend();
+            }
+
+            if (Input.GetButton(defendInput))
             {
                 battler.Defend();
                 timer = 0f;
-
+                GetComponent<Animator>().SetBool("IsDefending", true);
                 return;
+            }
+            else
+            {
+                GetComponent<Animator>().SetBool("IsDefending", false);
             }
         }
 
@@ -90,6 +101,11 @@ namespace RPG.Control {
 
                 stamina.DecreaseStamina(sprintStaminaCost);
             }
+        }
+
+        public void Strafe (bool strafeValue)
+        {
+            vThirdPersonCC.isStrafing = strafeValue;
         }
 
         public float GetInputCooldown()

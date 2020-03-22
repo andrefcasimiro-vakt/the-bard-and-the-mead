@@ -9,6 +9,7 @@ using RPG.Weapon;
 using RPG.AI;
 using RPG.Saving;
 using System.Linq;
+using RPG.Control;
 
 namespace RPG.AIV3 {
 
@@ -46,6 +47,15 @@ namespace RPG.AIV3 {
         public string[] candidateTags;
         [HideInInspector] public GameObject target;
 
+
+        [Header("Combat Settings")]
+        [Range(0f, 1f)] public float minimumChanceToAttack = 0.35f;
+        [Range(0f, 1f)] public float minimumChanceToDefend = 0.75f;
+        [Range(0f, 1f)] public float minimumChanceToDodge = 0.5f;
+        [Range(0f, 1f)] public float minimumChanceToFleeIfLowHealth = 0.5f;
+        [Tooltip("Influences the interval between attacks. A mix of random numbers and the agility of the character. This is the base value:")]
+        public float baseAttackCooldown = 0.5f;
+
         [SerializeField] AGENT_STATE state = AGENT_STATE.PATROL;
 
         // Private         
@@ -55,18 +65,24 @@ namespace RPG.AIV3 {
         [HideInInspector] public Battler battler => GetComponent<Battler>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
 
-        public bool inProgress = false;
+        // public bool inProgress = false;
         
         // Behaviours
         Fight fight;
         Flee flee;
         Talk talk;
+        TakingDamage takingDamage;
+        Defend defend;
+        Dodge dodge;
 
         void Start() {
             // Create behaviours
             fight = new Fight(this);
             flee = new Flee(this);
             talk = new Talk(this);
+            takingDamage = new TakingDamage(this);
+            defend = new Defend(this);
+            dodge = new Dodge(this);
         }
 
         void Update() {
@@ -91,6 +107,7 @@ namespace RPG.AIV3 {
                 GetComponent<Animator>().SetFloat("InputVertical", 0);   
                 navMeshAgent.isStopped = true;
             } else {
+                HandleFacePlayer();
                 HandleMovement();
                 HandleVision();
             }
@@ -106,8 +123,17 @@ namespace RPG.AIV3 {
                 case AGENT_STATE.FIGHTING:
                     fight.Dispatch();
                     break;
+                case AGENT_STATE.DEFEND:
+                    defend.Dispatch();
+                    break;
+                case AGENT_STATE.DODGE:
+                    dodge.Dispatch();
+                    break;
                 case AGENT_STATE.FLEE:
                     flee.Dispatch();
+                    break;
+                case AGENT_STATE.TAKING_DAMAGE:
+                    takingDamage.Dispatch();
                     break;
                 case AGENT_STATE.TALKING:
                     talk.Dispatch();
@@ -117,11 +143,24 @@ namespace RPG.AIV3 {
                     return;
             }
 
-            // GetComponent<Animator>().SetBool("IsStrafing", inProgress);
+            
+           
         }
 
 
+
         // Components
+
+        void HandleFacePlayer() {
+            bool facePlayer = state == AGENT_STATE.CHASE || state == AGENT_STATE.FIGHTING;
+
+            if (facePlayer) {
+                AI_Helpers.FaceTarget(
+                    target,
+                    this.gameObject
+                );
+            }
+        }
 
         void HandleMovement() {
             navMeshAgent.enabled = !health.IsDead();
@@ -146,11 +185,9 @@ namespace RPG.AIV3 {
                 return;
             }
 
-            // Consider only casting the vision on patrol
-            bool castVision = !(
-                state == AGENT_STATE.FIGHTING
-                || state == AGENT_STATE.FLEE
-            ) && (alliance == ALLIANCE.ENEMY);
+            bool castVision = alliance == ALLIANCE.ENEMY;
+            // Dont forget to combine bool operations or your mom will attack you!!
+            castVision = castVision && (state == AGENT_STATE.PATROL || state == AGENT_STATE.CHASE);
 
             if (castVision == false)
             {
@@ -257,12 +294,14 @@ namespace RPG.AIV3 {
                 return;
             }
 
+            MakeTargetStrafe();
+
             Vector3 destination = targetLastKnownPosition;
 
             float currentDistance = Vector3.Distance(target.transform.position, transform.position);
 
             // Has reached target
-            if (currentDistance < stoppingDistanceToPlayer)
+            if (currentDistance <= stoppingDistanceToPlayer)
             {
                 state = AGENT_STATE.FIGHTING;
                 return;
@@ -291,114 +330,6 @@ namespace RPG.AIV3 {
             }
         }
 
-        // FIGHTING
-        private void LateUpdate()
-        {
-
-            bool facePlayer = state == AGENT_STATE.CHASE || state == AGENT_STATE.FIGHTING;
-
-            if (facePlayer) {
-                AI_Helpers.FaceTarget(
-                    target,
-                    this.gameObject
-                );
-            }
-        }
-
-        /*void FacePlayer()
-        {
-            Vector3 targetPosition = new Vector3(target.transform.position.x,
-                                                   this.transform.position.y,
-                                                   target.transform.position.z);
-            this.transform.LookAt(targetPosition);
-        }*/
-
-        /*void Fight()
-        {
-            if (inProgress) {
-                return;
-            }
-
-            if (target == null) {
-                return;
-            }
-
-            if (target.GetComponent<Health>().IsDead())
-            {
-                return;
-            }
-        
-            if (TargetIsFarAway())
-            {
-                state = AGENT_STATE.CHASE;
-                return;
-            }
-
-            if (TargetIsAttacking() == true) {
-                if (UnityEngine.Random.Range(0f, 1f) > 0.5f)
-                {
-                    StartCoroutine(Defend());
-                }
-            }
-            else
-            {
-                StartCoroutine(Attack());
-            }
-        }
-
-        IEnumerator Attack()
-        {
-            inProgress = true;
-
-            battler.Attack();
-
-            // Wait Until We Trigger Attack Animation
-            yield return new WaitUntil(() => battler.IsAttacking() == true);
-
-            // Now Wait Until Attack Animation Is Over
-            yield return new WaitUntil(() => battler.IsAttacking() == false);
-
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
-
-            inProgress = false;
-
-            yield return null;
-        }
-        IEnumerator Defend()
-        {
-            inProgress = true;
-
-            battler.Defend();
-
-            // Wait Until We Trigger Attack Animation
-            yield return new WaitUntil(() => battler.IsDefending() == true);
-
-            // Now Wait Until Attack Animation Is Over
-            yield return new WaitUntil(() => battler.IsDefending() == false);
-
-            yield return new WaitForSeconds(UnityEngine.Random.Range(0f, 1f));
-            
-            inProgress = false;
-
-            yield return null;
-        }
-
-        // COMBAT Utils
-        public bool TargetIsFarAway()
-        {
-            return Vector3.Distance(target.transform.position, transform.position) > weaponManager.GetStoppingDistance();
-        }
-        bool TargetIsAttacking()
-        {
-            return target.GetComponent<Battler>().IsAttacking();
-        }
-
-        bool TargetIsDefending()
-        {
-            return target.GetComponent<Battler>().IsDefending();
-        }
-    */
-
         // PUBLIC
         public void SetState (AGENT_STATE state) {
             this.state = state;
@@ -408,13 +339,27 @@ namespace RPG.AIV3 {
             this.target = target;
         }
 
-        public void TakeDamage(GameObject target) {
-            this.target = target;
-
-            transform.Translate(Vector3.back);
-
-            state = AGENT_STATE.CHASE;
+        public void MakeTargetStrafe()
+        {
+            // Make target strafe because combat is about to begin
+            PlayerController playerController = target.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.Strafe(true);
+            }
         }
+
+        public void CancelTargetStrafe()
+        {
+            // Make target strafe because combat is about to begin
+            PlayerController playerController = target.GetComponent<PlayerController>();
+            if (playerController != null)
+            {
+                playerController.Strafe(false);
+            }
+        }
+        
+
 
         // Save System
 
@@ -455,6 +400,9 @@ namespace RPG.AIV3 {
         CHASE,
         FLEE,
         FIGHTING,
+        DEFEND,
+        DODGE,
+        TAKING_DAMAGE,
         TALKING,
         DEAD,
     }

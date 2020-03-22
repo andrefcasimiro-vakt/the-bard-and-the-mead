@@ -63,7 +63,7 @@ namespace RPG.Stats {
 
         // HEALTH
         public float GetHealth(
-            int startLevel,
+            int currentLevel,
             CharacterClassEnum characterClass,
             CharacterRaceEnum characterRace,
             CharacterGenderEnum characterGender
@@ -75,7 +75,7 @@ namespace RPG.Stats {
             {
                 if (stat.characterClass == characterClass)
                 {
-                    healthPoints = stat.initialHealthPoints + (startLevel * stat.levelMultiplier);
+                    healthPoints = stat.initialHealthPoints + (currentLevel * stat.levelMultiplier);
                 }
             }
 
@@ -103,7 +103,7 @@ namespace RPG.Stats {
 
         // STAMINA
         public float GetStamina(
-            int startLevel,
+            int currentLevel,
             CharacterClassEnum characterClass,
             CharacterRaceEnum characterRace,
             CharacterGenderEnum characterGender
@@ -116,7 +116,7 @@ namespace RPG.Stats {
             {
                 if (stat.characterClass == characterClass)
                 {
-                    staminaPoints = stat.initialStaminaPoints + (startLevel * stat.levelMultiplier);
+                    staminaPoints = stat.initialStaminaPoints + (currentLevel * stat.levelMultiplier);
                 }
             }
 
@@ -144,7 +144,7 @@ namespace RPG.Stats {
 
         // AGILITY
         public float GetAgility(
-            int startLevel,
+            int currentLevel,
             CharacterClassEnum characterClass,
             CharacterRaceEnum characterRace,
             CharacterGenderEnum characterGender
@@ -157,7 +157,7 @@ namespace RPG.Stats {
             {
                 if (stat.characterClass == characterClass)
                 {
-                    agilityPoints = stat.initialAgilityPoints + (startLevel * stat.levelMultiplier);
+                    agilityPoints = stat.initialAgilityPoints + (currentLevel * stat.levelMultiplier);
                 }
             }
 
@@ -183,6 +183,87 @@ namespace RPG.Stats {
             return agilityPoints;
         }
 
+        // ATTACK
+        public float GetAttackPoints(
+            int currentLevel,
+            CharacterClassEnum characterClass,
+            CharacterRaceEnum characterRace,
+            CharacterGenderEnum characterGender
+        )
+        {
+            float attackPoints = 0f;
+
+            // Evaluate base health per class and current level
+            foreach (CharacterStat stat in characterStats)
+            {
+                if (stat.characterClass == characterClass)
+                {
+                    attackPoints = stat.initialAttackPoints + (currentLevel * stat.levelMultiplier);
+                }
+            }
+
+            // Add bonus based on race
+            foreach (CharacterRace race in characterRaces)
+            {
+                if (race.characterRace == characterRace)
+                {
+                    attackPoints += race.bonusAttackPoints;
+                }
+            }
+
+            // Add bonus based on gender
+            foreach (CharacterGender gender in characterGenders)
+            {
+                if (gender.characterGender == characterGender)
+                {
+                    attackPoints += gender.bonusAttackPoints;
+                }
+            }
+
+            // Finally, return constructed health points
+            return attackPoints;
+        }
+
+        // DEFEND
+        public float GetDefensePoints(
+            int currentLevel,
+            CharacterClassEnum characterClass,
+            CharacterRaceEnum characterRace,
+            CharacterGenderEnum characterGender
+        )
+        {
+            float defensePoints = 0f;
+
+            // Evaluate base health per class and current level
+            foreach (CharacterStat stat in characterStats)
+            {
+                if (stat.characterClass == characterClass)
+                {
+                    defensePoints = stat.initialDefensePoints + (currentLevel * stat.levelMultiplier);
+                }
+            }
+
+            // Add bonus based on race
+            foreach (CharacterRace race in characterRaces)
+            {
+                if (race.characterRace == characterRace)
+                {
+                    defensePoints += race.bonusDefensePoints;
+                }
+            }
+
+            // Add bonus based on gender
+            foreach (CharacterGender gender in characterGenders)
+            {
+                if (gender.characterGender == characterGender)
+                {
+                    defensePoints += gender.bonusDefensePoints;
+                }
+            }
+
+            // Finally, return constructed health points
+            return defensePoints;
+        }
 
 
         public int GetRequiredExperienceForLevel (
