@@ -215,6 +215,8 @@ namespace RPG.Weapon {
             // If target is not Player
             if (targetAi != null)
             {
+                targetAi.SetTarget(weaponOwner);
+
                 // Decide here if we take the damage
                 float chance = UnityEngine.Random.Range(0, 1f);
 

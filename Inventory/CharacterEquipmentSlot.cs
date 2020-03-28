@@ -26,6 +26,7 @@ namespace RPG.Inventory
     {
 
         // Equipment Slots
+        public Slot hair;
         public Slot head;
         public Slot torso;
         public Slot leftUpperArm;
@@ -46,7 +47,8 @@ namespace RPG.Inventory
             return
             (
                 // Whenever I have time, I should probably unregret this
-                (head != null && head.equipment ? head.equipment.defenseRate : 0f)
+                (hair != null && hair.equipment ? hair.equipment.defenseRate : 0f)
+                + (head != null && head.equipment ? head.equipment.defenseRate : 0f)
                 + (torso != null && torso.equipment ? torso.equipment.defenseRate : 0f)
                 + (leftUpperArm != null && leftUpperArm.equipment ? leftUpperArm.equipment.defenseRate  : 0f)
                 + (leftLowerArm != null && leftLowerArm.equipment ? leftLowerArm.equipment.defenseRate  : 0f)
@@ -64,6 +66,10 @@ namespace RPG.Inventory
         {
             switch (bodyPart)
             {
+                case BodyPart.Hair:
+                    hair = null;
+                    hair = new Slot(equipment);
+                    break;
                 case BodyPart.Head:
                     head = null;
                     head = new Slot(equipment);
@@ -121,6 +127,8 @@ namespace RPG.Inventory
         {
             switch (bodyPart)
             {
+                case BodyPart.Hair:
+                    return hair;
                 case BodyPart.Head:
                     return head;
                 case BodyPart.Torso:
@@ -154,6 +162,7 @@ namespace RPG.Inventory
 
         private SaveableSlot[] CreateSaveableSlots()
         {
+            SaveableSlot s_hair = new SaveableSlot("hair", hair?.equipment?.itemName);
             SaveableSlot s_head = new SaveableSlot("head", head?.equipment?.itemName);
             SaveableSlot s_torso = new SaveableSlot("torso", torso?.equipment?.itemName);
             SaveableSlot s_leftUpperArm = new SaveableSlot("leftUpperArm", leftUpperArm?.equipment?.itemName);
@@ -170,6 +179,8 @@ namespace RPG.Inventory
             SaveableSlot s_rightWeapon = new SaveableSlot("rightWeapon", rightWeapon?.equipment?.itemName);
             
             List<SaveableSlot> s_slots = new List<SaveableSlot>();
+
+            s_slots.Add(s_hair);
             s_slots.Add(s_head);
             s_slots.Add(s_torso);
             s_slots.Add(s_leftUpperArm);
@@ -204,6 +215,7 @@ namespace RPG.Inventory
         }
 
         private void LoadSlots(SaveableSlot[] savedSlots) {
+            hair = null;
             head = null;
             torso = null;
             leftUpperArm = null;
@@ -223,6 +235,16 @@ namespace RPG.Inventory
 
             if (characterInventory == null) {
                 Debug.LogError("No character inventory found. Were you trying to load slots on the wrong character?");
+            }
+
+            // Hair
+            string hairEquipment = savedSlots.Where(x => x.slotKey == "hair").First().currentEquipment;
+            if (!string.IsNullOrEmpty(hairEquipment)) {
+                ScriptableEquipment hairEquipmentInstance = characterInventory.FindByItemName(hairEquipment) as ScriptableEquipment;
+                if (hairEquipment != null) {
+                    hair = new Slot(hairEquipmentInstance);
+                    hair.equipment.Equip(this.gameObject);
+                }
             }
 
             // Head

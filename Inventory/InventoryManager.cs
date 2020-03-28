@@ -37,6 +37,7 @@ namespace RPG.Inventory
         [Header("Equipment Panel UI")]
         public GameObject equipmentPanel;
         // Equipment Slots
+        public GameObject hairSlotBTN;
         public GameObject headSlotBTN;
         public GameObject torsoSlotBTN;
         public GameObject leftUpperArmSlotBTN;
@@ -149,7 +150,7 @@ namespace RPG.Inventory
 
                     // Count all existing items so far
                     int count = inventory.FindAll(inventoryItem => inventoryItem.name == visited[visitedIndex].name).Count;
-                    stackCounter.GetComponent<Text>().text = "x" + count;
+                    if (stackCounter != null) stackCounter.GetComponent<Text>().text = "x" + count;
                 }
                 else
                 {
@@ -259,6 +260,8 @@ namespace RPG.Inventory
         {
             switch (bodyPart)
             {
+                case BodyPart.Hair:
+                    return hairSlotBTN;
                 case BodyPart.Head:
                     return headSlotBTN;
                 case BodyPart.Torso:

@@ -5,10 +5,11 @@ using RPG.Dialogue.Core;
 using RPG.Events;
 using RPG.Control;
 using System.Collections.Generic;
+using RPG.Saving;
 
 namespace RPG.Dialogue {
 
-    public class ConversationManager : MonoBehaviour {
+    public class ConversationManager : MonoBehaviour, ISaveable {
 
         [Header("UI")]
         [Tooltip("The dialogue canvas user-interface")]
@@ -31,9 +32,11 @@ namespace RPG.Dialogue {
         [Header("SFX")]
         public AudioClip popupGui;
 
+        public bool conversationHasOccurred = false;
+
         List<DialogueEvent> events = new List<DialogueEvent>();
 
-        bool dialogueInProgress = false;
+        public bool dialogueInProgress = false;
         bool playerIsNear = false;
 
         void Awake()
@@ -69,6 +72,8 @@ namespace RPG.Dialogue {
 
             dialogueOwner.GetComponent<AI_Core_V3>().SetState(AGENT_STATE.TALKING);
 
+
+            instantiatedActionUI = GameObject.FindWithTag("ActionPopup");
             instantiatedActionUI.GetComponent<Text>().text = "";
 
             // Set a new dialogue for the dialogue ui
@@ -111,12 +116,19 @@ namespace RPG.Dialogue {
             // Restore AI previous state that was set before the conversation took place
             dialogueOwner.GetComponent<AI_Core_V3>().SetState(AGENT_STATE.PATROL);
 
-
             instantiatedDialogueUi.SetActive(false);
             DrawGUI();
 
+            instantiatedActionUI = GameObject.FindWithTag("ActionPopup");
+            if (instantiatedActionUI != null) {
+                instantiatedActionUI.GetComponent<Text>().text = "";
+            }
+
+
+            conversationHasOccurred = true;
             dialogueInProgress = false;
         }
+
 
         // UI Action Popup Logic
         void OnTriggerEnter(Collider col)
@@ -149,6 +161,21 @@ namespace RPG.Dialogue {
                     ? "E) Talk with " + dialogueOwnerName
                     : "E) Talk";
             }
+        }
+
+        
+        public object CaptureState()
+        {
+            return conversationHasOccurred;
+        }
+
+        public void RestoreState(object state)
+        {
+            conversationHasOccurred = (bool)state;
+        }
+
+        public void OnCleanState() {
+            conversationHasOccurred = false;
         }
     }
 }

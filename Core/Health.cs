@@ -115,9 +115,7 @@ namespace RPG.Core {
 
                 // Non-player case
                 if (ai != null)
-                {   
-                    ai.SetTarget(damageOwner);
-
+                {
                     ai.SetState(AGENT_STATE.TAKING_DAMAGE);
                 }
                 else
@@ -127,10 +125,14 @@ namespace RPG.Core {
             }
             else
             {
-                // Reward target with experience points
-                damageOwner.GetComponent<BaseStats>().IncreaseExperience(
-                    GetComponent<Battler>().GetRewardExperience()
-                );
+                // Award experience to Playero nly              
+                if (damageOwner.gameObject.tag == "Player")
+                {
+                    // Reward target with experience points
+                    damageOwner.GetComponent<BaseStats>().IncreaseExperience(
+                        GetComponent<Battler>().GetRewardExperience()
+                    );
+                }
 
                 Die();
 
@@ -196,9 +198,7 @@ namespace RPG.Core {
 
         public void OnCleanState() {
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
-            if (currentHealthPoints == 0f) {
-                currentHealthPoints = maxHealthPoints;
-            }        
+            currentHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
         }
     }
 

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using RPG.Dialogue;
 
 namespace RPG.Switch {
 
@@ -40,7 +41,8 @@ namespace RPG.Switch {
 
         [Tooltip("If set, will toggle the first children at the game object")]
         public bool childrenOnly = false;
-        [Tooltip("If set, will toggle a component instead of the game object")]
+        [Tooltip("If any of these are set, will toggle a component instead of the game object")]
+        public SphereCollider colliderToToggle;
         public MonoBehaviour componentToToggle;
 
         [Header("Debugger")]
@@ -48,6 +50,11 @@ namespace RPG.Switch {
 
         // Private
         GameObject player;
+
+
+        public ConversationManager conversationManager => GetComponent<ConversationManager>();
+        [Header("Conversation Settings")]
+        public bool checkConditionWhileInDialogue = false;
 
         void Awake()
         {
@@ -67,8 +74,25 @@ namespace RPG.Switch {
 
         public void Update()
         {
+            // If conversation is in progress, check if we want to test the condition
+            if (conversationManager != null)
+            {
+                if (checkConditionWhileInDialogue == false)
+                {
+                    if (conversationManager.dialogueInProgress) return;
+                }
+            }
+            
+
             if (useRange)
             {
+                if (player == null)
+                {
+                    player = GameObject.FindWithTag("Player");
+
+                    if (player == null) return;
+                }
+
                 if (Vector3.Distance(this.gameObject.transform.position, player.transform.position) > minimumRangeToPlayerBeforeBeginProcessing)
                 {
                     return;
@@ -103,6 +127,13 @@ namespace RPG.Switch {
                 return;
             }
 
+
+            // Box, sphere collider case
+            if (colliderToToggle != null)
+            {
+                colliderToToggle.enabled = condition;
+                return;
+            }
 
 
             // Should we enable / disable a MonoBehaviour component?

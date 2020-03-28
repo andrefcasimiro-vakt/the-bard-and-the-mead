@@ -1,10 +1,15 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace RPG.EventSystem {
-    public class Event : MonoBehaviour
-    {        
+
+    /// Utility to hold sequential list of events so we don't end up having a gameobject filled with event components
+    public class EventPage : MonoBehaviour
+    {
+        [Header("Event Page Set-up")]
+        public string NOTE = "Put all your Events as children of this component";
+
         public enum ProcessType
         {
             EVENT,
@@ -13,27 +18,25 @@ namespace RPG.EventSystem {
             ON_TRIGGER_ENTER,
         }
 
-        [Header("NOTE")]
-        public string note = "If using event page, minimize this monobehaviour";
-
         [Header("Event Processing Options")]
         public ProcessType processType;
 
         [Header("Event Conditions")]
         public LocalSwitch localSwitch;
 
-        [Header("List of events")]
-        List<Template> customEvents = new List<Template>();
+        List<Event> events = new List<Event>();
 
         private bool isRunning = false;
 
         // Register all events in the component 
         void Awake() {
-            foreach (MonoBehaviour script in gameObject.GetComponents<MonoBehaviour>())
-            {
-                Template s = script as Template;
-                if (s != null) {
-                    customEvents.Add(s);
+            foreach (Transform t in this.transform) {
+                foreach (MonoBehaviour script in t.gameObject.GetComponents<MonoBehaviour>())
+                {
+                    Event e = script as Event;
+                    if (e != null) {
+                        events.Add(e);
+                    }
                 }
             }
         }
@@ -46,6 +49,7 @@ namespace RPG.EventSystem {
             }
         }
 
+    
         private void Update()
         {
             if (isRunning) return;
@@ -55,6 +59,7 @@ namespace RPG.EventSystem {
                 Initialize();
             }
         }
+
 
         public void OnTriggerEnter(Collider col)
         {
@@ -73,18 +78,23 @@ namespace RPG.EventSystem {
             }
 
             isRunning = true;
-            StartCoroutine(DispatchEvents());
+            StartCoroutine(DispatchAllEvents());
         }
 
-        public IEnumerator DispatchEvents()
+        
+        public IEnumerator DispatchAllEvents()
         {
-            foreach(Template ev in customEvents)
+            foreach(Event ev in events)
             {
-                yield return StartCoroutine(ev.Dispatch());
+                isRunning = true;
+                yield return StartCoroutine(ev.DispatchEvents());
             }
 
             isRunning = false;
+            yield return null;
         }
-        
+
+
     }
+
 }

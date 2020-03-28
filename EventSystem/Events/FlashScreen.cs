@@ -6,6 +6,12 @@ using UnityEngine.Events;
 
 namespace RPG.EventSystem
 {
+    public enum FadeType {
+        IN_AND_OUT,
+        IN,
+        OUT
+    }
+
     public class FlashScreen : Template
     {
         [Header("---")]
@@ -20,6 +26,8 @@ namespace RPG.EventSystem
 
         public UnityEvent events;
 
+        public FadeType fadeType = FadeType.IN_AND_OUT;
+
         public override IEnumerator Dispatch() {
 
             GameObject cachedInstance = Instantiate(flashPrefab);
@@ -27,6 +35,22 @@ namespace RPG.EventSystem
 
             if (canvasGroup == null) {
                 Debug.Log("No canvas group found on your Flash screen prefab!");
+                yield return null;
+            }
+
+            if (fadeType == FadeType.IN)
+            {
+                yield return StartCoroutine(FadeIn());
+                events.Invoke();
+
+                yield return null;
+            }
+
+            if (fadeType == FadeType.OUT)
+            {
+                yield return StartCoroutine(FadeOut());
+                events.Invoke();
+
                 yield return null;
             }
 

@@ -24,7 +24,7 @@ namespace RPG.Control {
             }
         }
 
-        void FixedUpdate()
+        void LateUpdate()
         {
             if (lockAnimator)
             {
@@ -43,10 +43,16 @@ namespace RPG.Control {
             if (v == false)
             {
                 GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeAll;
+                                GetComponent<Animator>().SetFloat("InputVertical", 0f);
+
             }
             else
             {
                 GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+                GetComponent<Animator>().SetFloat("InputVertical", 0f);
+
+                // Nasty af
+                input.canRun = false;
             }
         }
 

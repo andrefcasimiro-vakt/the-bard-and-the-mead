@@ -10,6 +10,7 @@ namespace RPG.Events
         public string displayText = "E) Action... ";
         GameObject actionPopup; 
 
+        public UnityEvent OnFacingObject;
         public UnityEvent OnKeyDown;
 
         bool isInRange = false;

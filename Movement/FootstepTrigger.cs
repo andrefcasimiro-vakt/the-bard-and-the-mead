@@ -9,7 +9,7 @@ namespace RPG.Movement {
         [SerializeField]
         FootstepManager footstepManager;
 
-        float volume = 0.2f;
+        float volume = 0.85f;
 
 
         AudioSource audioSource => GetComponent<AudioSource>();
@@ -17,7 +17,13 @@ namespace RPG.Movement {
 
         void Start() {
             audioSource.volume = volume;
-            footstepManager = GameObject.FindWithTag("FootstepManager").GetComponent<FootstepManager>();
+
+            FootstepManager fm =  GameObject.FindWithTag("FootstepManager").GetComponent<FootstepManager>();
+        
+            if (fm != null)
+            {
+                footstepManager = fm;
+            }
         }
 
         void OnTriggerEnter(Collider col)

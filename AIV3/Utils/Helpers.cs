@@ -41,7 +41,7 @@ namespace RPG.AIV3 {
 
         public static bool TargetIsFarAway(GameObject target, GameObject own, WeaponManager weaponManager)
         {
-            return Vector3.Distance(target.transform.position, own.transform.position) > weaponManager.GetStoppingDistance();
+            return Vector3.Distance(target.transform.position, own.transform.position) >= weaponManager.GetStoppingDistance();
         }
         
         public static bool TargetIsAttacking(GameObject target)

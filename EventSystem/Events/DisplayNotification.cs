@@ -17,6 +17,7 @@ namespace RPG.EventSystem {
         public AudioClip notificationSfx;
 
         GameObject player;
+        AudioSource audioSource => GetComponent<AudioSource>();
 
         private void Start()
         {
@@ -38,8 +39,9 @@ namespace RPG.EventSystem {
 
             if (notificationSfx)
             {
-                AudioSource audioSource = this.gameObject.AddComponent(typeof(AudioSource)) as AudioSource;
-                audioSource.PlayOneShot(notificationSfx);
+                if (audioSource != null) {
+                    audioSource.PlayOneShot(notificationSfx);
+                }
             }
 
             ShowPopup(notificationText);
