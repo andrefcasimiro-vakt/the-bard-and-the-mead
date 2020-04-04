@@ -62,6 +62,27 @@ namespace RPG.Quest {
             currentQuests.Add(newQuest);
         }
 
+        public void IncreaseObjectiveCounter(string questInfo)
+        {   
+            string[] split = questInfo.Split(':');
+            int questId = System.Convert.ToInt32(split[0]);
+            int objectiveId = System.Convert.ToInt32(split[1]);
+
+            QuestObjective questObjective = currentQuests.Find(x => x.questId == questId).objectives.Find(o => o.questObjectiveId == objectiveId);
+
+            if (questObjective == null)
+            {
+                return;
+            }
+
+            questObjective.counter++;
+
+            if (questObjective.counter >= questObjective.maxCounter)
+            {
+                CompleteObjective(objectiveId, questId);
+            }
+        }
+
         public void CompleteObjective(int objectiveId, int questId)
         {
             currentQuests.Find(x => x.questId == questId).objectives.Find(o => o.questObjectiveId == objectiveId).isDone = true;

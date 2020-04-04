@@ -142,15 +142,9 @@ namespace RPG.AIV3 {
                 default:
                     return;
             }
-
-            
-           
         }
 
-
-
         // Components
-
         void HandleFacePlayer() {
             bool facePlayer = state == AGENT_STATE.CHASE || state == AGENT_STATE.FIGHTING;
 
@@ -193,7 +187,6 @@ namespace RPG.AIV3 {
             {
                 return;
             }
-
 
             RaycastHit hit;
             Vector3 ownHeight = GetComponent<Collider>().bounds.center;
@@ -240,18 +233,20 @@ namespace RPG.AIV3 {
 
         // PATROL
         void Patrol() {
+            if (patrolPath == null)
+            {
+                return;
+            }
+
             timeSinceArrivedAtWaypoint += Time.deltaTime;
             Vector3 nextPosition = originalPosition;
 
-            if (patrolPath != null)
-            {
-                if (AtWaypoint()) {
-                    timeSinceArrivedAtWaypoint = 0f;
-                    CycleWaypoint();
-                }
-
-                nextPosition = GetCurrentWaypoint();
+            if (AtWaypoint()) {
+                timeSinceArrivedAtWaypoint = 0f;
+                CycleWaypoint();
             }
+
+            nextPosition = GetCurrentWaypoint();
 
             if (timeSinceArrivedAtWaypoint > waypointDwellTime) {
                 // MoveTo(nextPosition);
@@ -289,6 +284,7 @@ namespace RPG.AIV3 {
         // CHASE
         void Chase()
         {
+            Debug.Log("target:::" + target);
             if (target == null) 
             {
                 return;
@@ -297,7 +293,6 @@ namespace RPG.AIV3 {
             MakeTargetStrafe();
 
             Vector3 destination = targetLastKnownPosition;
-
             float currentDistance = Vector3.Distance(target.transform.position, transform.position);
 
             // Has reached target
@@ -317,8 +312,6 @@ namespace RPG.AIV3 {
             // Has Stamina To Continue chase?
             if (stamina.HasStaminaAgainstCostAction(staminaChasingCost))
             {
-                // MoveTo(destination);
-
                 AI_Helpers.MoveTo(destination, maxSpeed, patrolSpeedFraction, navMeshAgent);
 
                 stamina.DecreaseStamina(staminaChasingCost);

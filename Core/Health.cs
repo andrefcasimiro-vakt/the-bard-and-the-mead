@@ -38,6 +38,7 @@ namespace RPG.Core {
         public int defenseBuff = 0;
 
         AudioSource audioSource => GetComponent<AudioSource>();
+        GameObject damageOwner;
 
         void Start()
         {
@@ -64,7 +65,7 @@ namespace RPG.Core {
 
         public void TakeDamage(float damageAmount, GameObject damageOwner)
         {
-                                        Debug.Log("damageAmount  " + damageAmount);
+            this.damageOwner = damageOwner;
 
             if (IsDead())
             {    
@@ -73,7 +74,6 @@ namespace RPG.Core {
 
             // Get base stats for defense
             defenseBuff = (int)GetComponent<BaseStats>().GetDefense();
-
 
             CharacterEquipmentSlot charEquipmentSlots = GetComponent<CharacterEquipmentSlot>();
 
@@ -91,22 +91,11 @@ namespace RPG.Core {
                 defenseBuff += (int)GetComponent<WeaponManager>().weaponSlots[0].currentWeapon.defenseRate;
             }
 
-            Debug.Log("------");
-            Debug.Log("CHARACTER :::: " + gameObject.name);
-            Debug.Log("damage amount that I will get" + damageAmount);
-            Debug.Log("my defense buff" + defenseBuff);
-
             // Finally, update the damage we will receive
             float damage = Mathf.Clamp(damageAmount - defenseBuff, 0, maxHealthPoints);
-            
-            Debug.Log("Damage that I will get:  " + damage);
-            Debug.Log("------");
-
             currentHealthPoints = Mathf.Max(currentHealthPoints - damage, 0);
 
-            
             UpdateHealthSlider();
-
 
             // Now evaluate result
             if (currentHealthPoints > 0f)
@@ -198,7 +187,7 @@ namespace RPG.Core {
 
         public void OnCleanState() {
             maxHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
-            currentHealthPoints = baseStats.GetHealth() + bonusHealthPoints;
+            currentHealthPoints = maxHealthPoints;
         }
     }
 

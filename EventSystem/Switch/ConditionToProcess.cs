@@ -37,7 +37,9 @@ namespace RPG.Switch {
 
         [Header("Conditional Rendering Options")]
         [Tooltip("Start children deactivated")]
-        public bool deactivateChildrenOnAwake = true;
+        // You won't always want this. Remember that if you have any conditions depending on evaluating localSwitches on Awake (because of the OnLoading Saved Games)
+        // This evaluates only once if a switch is ON/OFF, so mind it for now.
+        public bool deactivateChildrenOnAwake = false;
 
         [Tooltip("If set, will toggle the first children at the game object")]
         public bool childrenOnly = false;

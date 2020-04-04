@@ -83,7 +83,9 @@ namespace RPG.Inventory
 
         void HandleSystem()
         {
-            player.SetActive(!inventoryUI.activeSelf);
+            // player.SetActive(!inventoryUI.activeSelf);
+            player.GetComponent<ComponentManager>().ToggleComponents(!inventoryUI.activeSelf); // Stop player from moving
+
 
             if (inventoryUI.activeSelf)
             {

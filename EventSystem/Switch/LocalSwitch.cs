@@ -34,6 +34,7 @@ public class LocalSwitch : MonoBehaviour, ISaveable
 
     public void RestoreState(object state)
     {
+        Debug.Log("restoring state of: " + this.gameObject.name);
         ON = (bool)state;
     }
 

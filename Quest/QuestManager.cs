@@ -157,7 +157,23 @@ namespace RPG.Quest {
                     return;
                 }
 
-                questObjectiveText.text = questObjective.questObjectiveDescription;
+                if (questObjective.useCounter)
+                {
+                    // If has a max counter (0/10)
+                    if (questObjective.maxCounter != -1)
+                    {
+                         questObjectiveText.text = questObjective.questObjectiveDescription + " (" + questObjective.counter + "/" + questObjective.maxCounter + ")";
+                    }
+                    else // No max counter, just keep counting (0)
+                    {
+                         questObjectiveText.text = questObjective.questObjectiveDescription + " (" + questObjective.counter + ")";
+                    }
+                }
+                else
+                {
+                    questObjectiveText.text = questObjective.questObjectiveDescription;
+                }
+
 
                 if (questObjective.isDone)
                 {

@@ -9,7 +9,7 @@ namespace RPG.Movement {
         [SerializeField]
         FootstepManager footstepManager;
 
-        float volume = 0.85f;
+        float volume = 1f;
 
 
         AudioSource audioSource => GetComponent<AudioSource>();

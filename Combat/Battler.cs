@@ -19,6 +19,7 @@ namespace RPG.Combat {
         Health health => GetComponent<Health>();
         Stamina stamina => GetComponent<Stamina>();
         WeaponManager weaponManager => GetComponent<WeaponManager>();
+        ComponentManager componentManager => GetComponent<ComponentManager>();
 
         [Header("Dodge")]
         [SerializeField] float dodgeStaminaCost = 10f;
@@ -79,13 +80,9 @@ namespace RPG.Combat {
         {
             weaponManager.Attack(gruntAudioClip);
 
-            // Stop movement when attacking
-
             yield return new WaitUntil(() => IsAttacking());
             
             yield return new WaitUntil(() => !IsAttacking());
-
-            // Restore movement
         }
 
         IEnumerator ExecuteDefense()

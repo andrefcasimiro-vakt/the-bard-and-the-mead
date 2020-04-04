@@ -22,14 +22,12 @@ namespace RPG.Dialogue
         public AudioClip advanceSfx;
 
         bool repaint = false;
+        
+        float inputCooldown = .5f;
+        float timer = 0;
 
         GameObject player;
     
-        void Awake()
-        {
-            player = GameObject.FindWithTag("Player");
-        }
-
         private void Start()
         {
             Toggle(false);
@@ -46,7 +44,10 @@ namespace RPG.Dialogue
 
         public void SetConversation(ConversationTree conversationTree)
         {
-            if (player == null) player = GameObject.FindWithTag("Player");
+            if (player == null)
+            {
+                player = GameObject.FindWithTag("Player");
+            }
 
             player.SetActive(false);
             this.conversationTree = conversationTree;
@@ -58,10 +59,14 @@ namespace RPG.Dialogue
             UnityEngine.Cursor.visible = true;
 
             repaint = true;
+
+            timer = 0f;
         }
 
         public void EndConversation()
         {
+            Debug.Log("END CONVERSATION");
+
             player.SetActive(true);
 
             this.conversationTree.dialogueCamera.SetActive(false);
@@ -78,6 +83,8 @@ namespace RPG.Dialogue
 
         private void Update()
         {
+            timer += Time.deltaTime;
+
             if (conversationTree == null || conversationTree.dialogueContainer == null)
             {
                 return;
@@ -91,14 +98,12 @@ namespace RPG.Dialogue
             }
 
             if (
-                // Input.GetKeyDown(KeyCode.Space) ||
-                Input.GetKeyDown(KeyCode.E) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter)
-                // || Input.GetButtonDown("Fire1")
+                timer > inputCooldown && Input.GetKeyDown(KeyCode.E)
             )
             {
                 // Play Sound
                 AdvanceOnClick();
+                timer = 0;
             }
         }
 

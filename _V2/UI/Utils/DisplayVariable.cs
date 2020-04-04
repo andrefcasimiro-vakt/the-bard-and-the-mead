@@ -14,8 +14,9 @@ namespace RPG.V2.UI.Utils {
     public class DisplayVariable : MonoBehaviour
     {
         [Header("UI Elements")]
-        [Tooltip("Ui element to display the variable")]
-        public Text textUI;
+        [Tooltip("Ui element to display the variable")] public Text textUI;
+        [Tooltip("Text that precedes the variable")] public string textPrefix = "";
+        [Tooltip("Text that succedes variable")] public string textSuffix = "";
 
         [Header("Variable owner")]
         public IDisplayVariable variableOwner;
@@ -34,7 +35,7 @@ namespace RPG.V2.UI.Utils {
 
         public void Display()
         {
-            textUI.text = variableOwner.GetVariable();
+            textUI.text = textPrefix + variableOwner.GetVariable() + textSuffix;
         }
 
     }

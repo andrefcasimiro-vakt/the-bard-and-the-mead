@@ -5,8 +5,11 @@ using UnityEngine;
 namespace RPG.V2.UI.Utils.Interfaces {
 
     /// Displays a variable on a text component
-    public interface IDisplayVariable
+    [System.Serializable]
+    public class IDisplayVariable : MonoBehaviour
     {
-        string GetVariable();
+        public virtual string GetVariable() {
+            return "";
+        }
     }
 }

@@ -11,16 +11,28 @@ namespace RPG.Quest {
         public string questObjectiveDescription;
         public bool isDone = false;
 
+        // If objective needs a counter to be completed (e. g. Kill 10 slimes)
+        public bool useCounter = false;
+        public int counter = 0;
+        public int maxCounter = 10; 
+
         public QuestObjective(
             int questObjectiveId,
             int questId,
             string questObjectiveDescription,
-            bool isDone
+            bool isDone,
+            bool useCounter,
+            int counter,
+            int maxCounter
         )
         {
             this.questObjectiveId = questObjectiveId;
             this.questObjectiveDescription = questObjectiveDescription;
             this.isDone = isDone;
+
+            this.useCounter = useCounter;
+            this.counter = counter;
+            this.counter = maxCounter;
         }
     }
 
